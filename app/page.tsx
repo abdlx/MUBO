@@ -1,118 +1,122 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import GlassSurface from "./components/GlassSurface";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { tracks } from "./data/tracks";
 
-const tracks = [
-  { title: "Midnight Drive", artist: "Alex Warren", duration: 173 },
-  { title: "Slow Horizons", artist: "Mira Lane", duration: 226 },
-  { title: "Afterglow", artist: "Northbound", duration: 241 },
-];
+type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
 
-function Icon({ name, size = 22 }: { name: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    chevron: <path d="m9 18 6-6-6-6" />,
-    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5a5.5 5.5 0 0 0 1.1-8.9Z" />,
-    more: <><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></>,
-    shuffle: <><path d="M16 3h5v5"/><path d="m4 20 5-5"/><path d="m15 9 6-6"/><path d="M4 4l16 16"/><path d="M16 20h5v-5"/></>,
-    repeat: <><path d="m17 1 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 23-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></>,
-    previous: <><path d="M10 3.8Q11.8 2.8 11.8 5v14q0 2.2-1.8 1.2l-8.6-6.8Q.2 12 1.4 10.6Z" fill="currentColor" stroke="none"/><path d="M22 3.8Q23.8 2.8 23.8 5v14q0 2.2-1.8 1.2l-8.6-6.8q-1.2-1.4 0-2.8Z" fill="currentColor" stroke="none"/></>,
-    next: <><path d="M2 3.8Q.2 2.8.2 5v14q0 2.2 1.8 1.2l8.6-6.8q1.2-1.4 0-2.8Z" fill="currentColor" stroke="none"/><path d="M14 3.8q-1.8-1-1.8 1.2v14q0 2.2 1.8 1.2l8.6-6.8q1.2-1.4 0-2.8Z" fill="currentColor" stroke="none"/></>,
-    play: <path d="m8 5 11 7-11 7V5Z" fill="currentColor" strokeLinejoin="round" />,
-    pause: <><rect x=".8" y=".2" width="8.3" height="23.6" rx="2" fill="currentColor" stroke="none"/><rect x="14.9" y=".2" width="8.3" height="23.6" rx="2" fill="currentColor" stroke="none"/></>,
-    volume: <><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></>,
-    device: <><rect x="4" y="3" width="16" height="12" rx="2"/><path d="M8 21h8M12 15v6"/></>,
-    list: <><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></>,
+function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
+  const paths: Record<IconName, React.ReactNode> = {
+    arrow: <path d="m9 18 6-6-6-6" />,
+    chevron: <path d="m8 4 8 8-8 8" />,
+    pause: <><rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" /><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" /></>,
+    play: <path d="m9 6 10 6-10 6V6Z" fill="currentColor" stroke="none" />,
+    search: <><circle cx="11" cy="11" r="7" /><path d="m16.2 16.2 4.3 4.3" /></>,
+    sparkle: <><path d="M12 2.8c.7 4.3 2.9 6.5 7.2 7.2-4.3.7-6.5 2.9-7.2 7.2-.7-4.3-2.9-6.5-7.2-7.2 4.3-.7 6.5-2.9 7.2-7.2Z" /><path d="M19 17.5c.25 1.6 1.05 2.4 2.5 2.5-1.45.1-2.25.9-2.5 2.5-.25-1.6-1.05-2.4-2.5-2.5 1.45-.1 2.25-.9 2.5-2.5Z" /></>,
   };
-  const stretchToBox = name === "pause" || name === "previous" || name === "next";
-  return <svg viewBox="0 0 24 24" width={size} height={size} preserveAspectRatio={stretchToBox ? "none" : undefined} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+
+  return <svg aria-hidden="true" fill="none" height={size} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width={size}>{paths[name]}</svg>;
 }
 
-const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+const categories = ["All", "Music", "Playlists", "Artists", "Albums"];
+const recentItems = tracks.map((track, index) => ({
+  ...track,
+  type: index === 1 || index === 3 ? "Albums" : "Music",
+}));
+const mixes = [
+  { title: "Discover Weekly", note: "Fresh finds, picked for your ears.", art: "discover" },
+  { title: "Chill Mix", note: "Laid-back color for your day.", art: "chill" },
+  { title: "Late Night", note: "For when the whole world gets quiet.", art: "night" },
+  { title: "Focus Flow", note: "Stay in the zone and let it unfold.", art: "focus" },
+];
+const artists = [
+  { name: "Alex Warren", initials: "AW", art: "clay" },
+  { name: "The Weeknd", initials: "TW", art: "ember" },
+  { name: "SZA", initials: "SZ", art: "rose" },
+  { name: "Drake", initials: "DR", art: "mono" },
+  { name: "Noah Kahan", initials: "NK", art: "dusk" },
+];
 
 export default function Home() {
-  const [playing, setPlaying] = useState(true);
-  const [progress, setProgress] = useState(79);
-  const [trackIndex, setTrackIndex] = useState(0);
-  const track = tracks[trackIndex];
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [query, setQuery] = useState("");
+  const [heroPlaying, setHeroPlaying] = useState(false);
+  const [showAllRecent, setShowAllRecent] = useState(false);
 
-  useEffect(() => {
-    if (!playing) return;
-    const timer = window.setInterval(() => {
-      setProgress((current) => {
-        if (current < track.duration) return current + 1;
-        setPlaying(false);
-        return 0;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [playing, track.duration]);
-
-  function changeTrack(direction: number) {
-    setTrackIndex((current) => (current + direction + tracks.length) % tracks.length);
-    setProgress(0);
-  }
+  const filteredRecent = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const result = recentItems.filter((item) => {
+      const categoryMatches = activeCategory === "All" || item.type === activeCategory;
+      const queryMatches = !normalizedQuery || item.title.toLowerCase().includes(normalizedQuery) || item.artist.toLowerCase().includes(normalizedQuery);
+      return categoryMatches && queryMatches;
+    });
+    return showAllRecent ? result : result.slice(0, 4);
+  }, [activeCategory, query, showAllRecent]);
 
   return (
-    <main className="player-shell">
-      <Image className="background-art" src="/afterglow-cover.png" alt="" fill priority sizes="100vw" />
-      <div className="background-wash" />
-      <header className="topbar">
-        <button className="icon-button back" aria-label="Go back"><Icon name="chevron" /></button>
-        <div className="now-label"><span>Playing from album</span><strong>Night Drives</strong></div>
-        <button className="icon-button" aria-label="More options"><Icon name="more" /></button>
-      </header>
-      <section className="artwork-wrap" aria-label="Album artwork">
-        <div className="artwork-glow" />
-        <Image className="artwork" src="/afterglow-cover.png" alt="Midnight Drive album cover" width={620} height={620} priority />
-        <div className="artwork-shine" />
-      </section>
-      <GlassSurface
-        width="min(100%, 680px)"
-        height="auto"
-        borderRadius="var(--control-card-radius)"
-        borderWidth={0.07}
-        brightness={50}
-        opacity={0.93}
-        blur={11}
-        displace={0}
-        backgroundOpacity={0}
-        saturation={1}
-        distortionScale={-180}
-        redOffset={0}
-        greenOffset={10}
-        blueOffset={20}
-        xChannel="R"
-        yChannel="G"
-        mixBlendMode="difference"
-        className="glass-player"
-        style={{ aspectRatio: "1.9" }}
-      >
-        <section className="glass-player-content" aria-label="Music controls">
-          <div className="card-heading">
-            <div className="card-cover-wrap">
-              <Image className="card-cover" src="/afterglow-cover.png" alt="" width={120} height={120} />
-            </div>
-            <div className="card-copy"><h1>{track.title}</h1><p>{track.artist}</p></div>
-            <div className="waveform" aria-hidden="true">
-              {[3.45, 2.55, 2.95, 2.2, 2.4, 1.7, 1.25].map((height, index) => (
-                <i key={index} style={{ height: `${height}cqw` }} />
+    <main className="home-shell">
+      <div className="ambient ambient-one" /><div className="ambient ambient-two" />
+      <div className="home-content">
+        <header className="home-header">
+          <div><p className="eyebrow">Good evening</p><h1>Let&apos;s listen</h1></div>
+          <button className="profile" aria-label="Open profile"><Image src="/afterglow-cover.png" alt="" fill sizes="58px" /><span>A</span></button>
+        </header>
+
+        <label className="search-field">
+          <Icon name="search" size={28} />
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search for songs, artists, or albums" aria-label="Search for songs, artists, or albums" />
+          {query && <button type="button" onClick={() => setQuery("")} aria-label="Clear search">Clear</button>}
+        </label>
+
+        <div className="category-row" aria-label="Browse categories">
+          {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{category}</button>)}
+        </div>
+
+        <section className="hero-card" aria-label="Featured playlist">
+          <Image className="hero-image" src="/afterglow-cover.png" alt="A car driving on a coastal road at sunset" fill priority sizes="(max-width: 760px) 100vw, 1060px" />
+          <div className="hero-scrim" />
+          <div className="hero-copy">
+            <p>For your evening</p><h2>Night Drives</h2><span>A playlist for late nights<br />and clearer thoughts.</span>
+            <button className="hero-play" onClick={() => setHeroPlaying((playing) => !playing)}><span><Icon name={heroPlaying ? "pause" : "play"} size={24} /></span>{heroPlaying ? "Pause" : "Play"}</button>
+          </div>
+          <div className="hero-dots" aria-hidden="true"><i /><i /><i /></div>
+        </section>
+
+        <section className="home-section">
+          <div className="section-heading">
+            <h2>Recently Played</h2>
+            <button onClick={() => setShowAllRecent((current) => !current)}>{showAllRecent ? "Show less" : "See all"}<Icon name="arrow" size={18} /></button>
+          </div>
+          {filteredRecent.length ? (
+            <div className="recent-grid">
+              {filteredRecent.map((item) => (
+                <Link className="album-card" href={`/player/${item.slug}`} key={item.title} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
+                  <span className={`album-art ${item.art}`}>{item.art === "road" && <Image src="/afterglow-cover.png" alt="" fill sizes="220px" />}<span className="hover-play"><Icon name="play" size={22} /></span></span>
+                  <strong>{item.title}</strong><small>{item.artist}</small>
+                </Link>
               ))}
             </div>
-          </div>
-          <div className="progress-row">
-            <span>{formatTime(progress)}</span>
-            <input aria-label="Song progress" type="range" min="0" max={track.duration} value={progress} onChange={(e) => setProgress(Number(e.target.value))} style={{ "--progress": `${(progress / track.duration) * 100}%` } as React.CSSProperties} />
-            <span>{formatTime(track.duration)}</span>
-          </div>
-          <div className="main-controls">
-            <button className="icon-button skip" onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
-            <button className="play-button" onClick={() => setPlaying(!playing)} aria-label={playing ? "Pause" : "Resume"}><Icon name="pause" size={32} /></button>
-            <button className="icon-button skip" onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
+          ) : (
+            <div className="empty-state"><Icon name="sparkle" size={24} /><p>No matches yet. Try another song or artist.</p><button onClick={() => { setQuery(""); setActiveCategory("All"); }}>Reset filters</button></div>
+          )}
+        </section>
+
+        <section className="home-section">
+          <div className="section-heading"><h2>Made For You</h2><button>See all<Icon name="arrow" size={18} /></button></div>
+          <div className="mix-grid">
+            {mixes.map((mix, index) => <button className={`mix-card ${mix.art}`} key={mix.title}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{mix.title}</strong><small>{mix.note}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>
-      </GlassSurface>
+
+        <section className="home-section artists-section">
+          <div className="section-heading"><h2>Your Top Artists</h2><button>See all<Icon name="arrow" size={18} /></button></div>
+          <div className="artist-row">
+            {artists.map((artist) => <button className="artist-card" key={artist.name}><span className={`artist-avatar ${artist.art}`}><i>{artist.initials}</i></span><strong>{artist.name}</strong></button>)}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
