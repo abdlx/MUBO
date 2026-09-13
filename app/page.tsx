@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import BottomDock from "./components/BottomDock";
 import { tracks } from "./data/tracks";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
@@ -56,7 +57,7 @@ export default function Home() {
   }, [activeCategory, query, showAllRecent]);
 
   return (
-    <main className="home-shell">
+    <main className="home-shell" id="top">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <div className="home-content">
         <header className="home-header">
@@ -84,7 +85,7 @@ export default function Home() {
           <div className="hero-dots" aria-hidden="true"><i /><i /><i /></div>
         </section>
 
-        <section className="home-section">
+        <section className="home-section" id="recently-played">
           <div className="section-heading">
             <h2>Recently Played</h2>
             <button onClick={() => setShowAllRecent((current) => !current)}>{showAllRecent ? "Show less" : "See all"}<Icon name="arrow" size={18} /></button>
@@ -103,20 +104,21 @@ export default function Home() {
           )}
         </section>
 
-        <section className="home-section">
+        <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Made For You</h2><button>See all<Icon name="arrow" size={18} /></button></div>
           <div className="mix-grid">
             {mixes.map((mix, index) => <button className={`mix-card ${mix.art}`} key={mix.title}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{mix.title}</strong><small>{mix.note}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>
 
-        <section className="home-section artists-section">
+        <section className="home-section artists-section" id="your-library">
           <div className="section-heading"><h2>Your Top Artists</h2><button>See all<Icon name="arrow" size={18} /></button></div>
           <div className="artist-row">
             {artists.map((artist) => <button className="artist-card" key={artist.name}><span className={`artist-avatar ${artist.art}`}><i>{artist.initials}</i></span><strong>{artist.name}</strong></button>)}
           </div>
         </section>
       </div>
+      <BottomDock />
     </main>
   );
 }

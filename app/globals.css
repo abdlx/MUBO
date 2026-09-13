@@ -14,7 +14,7 @@ button { color: inherit; }
 .ambient { border-radius: 50%; pointer-events: none; position: absolute; z-index: -1; }
 .ambient-one { background: rgba(72,111,173,.08); height: 460px; left: -260px; top: -230px; width: 460px; }
 .ambient-two { background: rgba(72,132,123,.06); height: 400px; right: -260px; top: 640px; width: 400px; }
-.home-content { margin: 0 auto; max-width: 848px; padding: clamp(54px,12.5vw,106px) clamp(20px,5vw,42px) 88px; }
+.home-content { margin: 0 auto; max-width: 848px; padding: clamp(54px,12.5vw,106px) clamp(20px,5vw,42px) 154px; }
 .home-header { align-items: center; display: flex; justify-content: space-between; }
 .eyebrow { color: var(--muted); font-size: clamp(14px,2.35vw,20px); letter-spacing: -.01em; margin: 0 0 7px; }
 .home-header h1 { font-size: clamp(32px,6.25vw,53px); letter-spacing: -.055em; line-height: .95; margin: 0; }
@@ -117,7 +117,7 @@ button { color: inherit; }
 button:focus-visible,input:focus-visible { outline: 2px solid rgba(255,255,255,.8); outline-offset: 3px; }
 
 @media (max-width:560px) {
-  .home-content { padding-bottom: 64px; }
+  .home-content { padding-bottom: 126px; }
   .search-field { gap: 12px; margin-top: 25px; }
   .search-field svg { height: 21px; width: 21px; }
   .category-row { margin-bottom: 18px; margin-top: 14px; }
