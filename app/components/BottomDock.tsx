@@ -81,10 +81,10 @@ export default function BottomDock() {
   return (
     <nav className={styles.dock} aria-label="Primary navigation">
       <GlassSurface
-        width="84.8%"
+        width="calc(83.9% - 10px)"
         height="84.1%"
         borderRadius="999px"
-        borderWidth={0.07}
+        borderWidth={0.04}
         brightness={50}
         opacity={0.93}
         blur={11}
@@ -100,7 +100,6 @@ export default function BottomDock() {
         mixBlendMode="difference"
         className={styles.pill}
       >
-        <span className={styles.divider} aria-hidden="true" />
         {items.map((item) => (
           <button
             className={`${styles.item} ${active === item.id ? styles.active : ""}`}
@@ -119,7 +118,7 @@ export default function BottomDock() {
         width="16.1%"
         height="84.1%"
         borderRadius="50%"
-        borderWidth={0.07}
+        borderWidth={0.04}
         brightness={50}
         opacity={0.93}
         blur={11}
