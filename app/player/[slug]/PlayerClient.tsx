@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import GlassSurface from "../../components/GlassSurface";
 import { usePlayer } from "../../context/PlayerContext";
-import { tracks, type Track } from "../../data/tracks";
+import type { Track } from "../../data/tracks";
 import styles from "./player.module.css";
 
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
@@ -23,84 +23,56 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
 }
 
 function CoverArt({ track, compact = false }: { track: Track; compact?: boolean }) {
-  const imageSrc = track.coverImage || (track.art === "road" ? "/afterglow-cover.png" : null);
-  return (
-    <div className={`${styles.coverArt} ${styles[track.art]} ${compact ? styles.compactCover : ""}`}>
-      {imageSrc && <Image src={imageSrc} alt={track.title} fill priority={!compact} sizes={compact ? "120px" : "(max-width: 600px) 84vw, 520px"} />}
-    </div>
-  );
+  return <div className={`${styles.coverArt} ${styles[track.art]} ${compact ? styles.compactCover : ""}`}>
+    {track.coverImage && <Image src={track.coverImage} alt={track.title} fill priority={!compact} sizes={compact ? "120px" : "(max-width: 600px) 84vw, 520px"} />}
+  </div>;
 }
 
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 
-export default function PlayerClient({ track }: { track: Track }) {
+export default function PlayerClient({ slug }: { slug: string }) {
   const router = useRouter();
-  const { isPlaying, togglePlay, playTrack } = usePlayer();
-  const [progress, setProgress] = useState(Math.min(79, track.duration));
-  const bgImage = track.coverImage || (track.art === "road" ? "/afterglow-cover.png" : null);
+  const { tracks, currentTrack, isPlaying, isLoading, currentTime, duration, playTrack, togglePlay, seek } = usePlayer();
+  const routeTrack = tracks.find((item) => item.slug === slug) ?? null;
 
   useEffect(() => {
-    playTrack(track);
-  }, [track, playTrack]);
+    if (routeTrack) playTrack(routeTrack);
+  }, [routeTrack, playTrack]);
 
-  useEffect(() => {
-    if (!isPlaying) return;
-    const timer = window.setInterval(() => {
-      setProgress((current) => {
-        if (current < track.duration) return current + 1;
-        return 0;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [isPlaying, track.duration]);
+  if (isLoading) return <main className={styles.playerShell}><div className={styles.playerMessage}>Loading your library…</div></main>;
+  if (!routeTrack) return <main className={styles.playerShell}><div className={styles.playerMessage}><p>This track is no longer in the library.</p><Link href="/">Back to Mubo</Link></div></main>;
 
+  const track = currentTrack ?? routeTrack;
+  const total = duration || track.duration || 0;
   function changeTrack(direction: number) {
     const currentIndex = tracks.findIndex((item) => item.slug === track.slug);
-    const nextTrack = tracks[(currentIndex + direction + tracks.length) % tracks.length];
-    playTrack(nextTrack);
-    router.push(`/player/${nextTrack.slug}`);
+    const next = tracks[(currentIndex + direction + tracks.length) % tracks.length];
+    if (next) { playTrack(next); router.push(`/player/${next.slug}`); }
   }
 
-  return (
-    <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
-      {bgImage ? (
-        <Image className={styles.backgroundArt} src={bgImage} alt="" fill priority sizes="100vw" />
-      ) : (
-        <div className={`${styles.backgroundArt} ${styles[track.art]}`} />
-      )}
-      <div className={styles.backgroundWash} />
-
-      <header className={styles.topbar}>
-        <Link className={styles.iconButton} href="/" aria-label="Back to home"><Icon name="back" /></Link>
-        <div className={styles.nowLabel}><span>Playing from album</span><strong>{track.album}</strong></div>
-        <button className={styles.iconButton} aria-label="More options"><Icon name="more" /></button>
-      </header>
-
-      <section className={styles.artworkWrap} aria-label={`${track.title} album artwork`}>
-        <div className={styles.artworkGlow} />
-        <CoverArt track={track} />
-        <div className={styles.artworkShine} />
+  return <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
+    {track.coverImage ? <Image className={styles.backgroundArt} src={track.coverImage} alt="" fill priority sizes="100vw" /> : <div className={`${styles.backgroundArt} ${styles[track.art]}`} />}
+    <div className={styles.backgroundWash} />
+    <header className={styles.topbar}>
+      <Link className={styles.iconButton} href="/" aria-label="Back to home"><Icon name="back" /></Link>
+      <div className={styles.nowLabel}><span>Playing from album</span><strong>{track.album}</strong></div>
+      <button className={styles.iconButton} aria-label="More options"><Icon name="more" /></button>
+    </header>
+    <section className={styles.artworkWrap} aria-label={`${track.title} album artwork`}><div className={styles.artworkGlow} /><CoverArt track={track} /><div className={styles.artworkShine} /></section>
+    <GlassSurface width="min(100%, 680px)" height="auto" borderRadius="var(--control-card-radius)" borderWidth={0.07} brightness={50} opacity={0.93} blur={11} displace={0} backgroundOpacity={0} saturation={1} distortionScale={-180} redOffset={0} greenOffset={10} blueOffset={20} xChannel="R" yChannel="G" mixBlendMode="difference" className={styles.glassPlayer} style={{ aspectRatio: "1.9" }}>
+      <section className={styles.glassPlayerContent} aria-label="Music controls">
+        <div className={styles.cardHeading}><CoverArt track={track} compact /><div className={styles.cardCopy}><h1>{track.title}</h1><p>{track.artist}</p></div><div className={styles.waveform} aria-hidden="true">{[3.45,2.55,2.95,2.2,2.4,1.7,1.25].map((height,index) => <i key={index} style={{ height: `${height}cqw` }} />)}</div></div>
+        <div className={styles.progressRow}>
+          <span>{formatTime(currentTime)}</span>
+          <input aria-label="Song progress" type="range" min="0" max={total || 1} value={Math.min(currentTime, total || 1)} disabled={!total} onChange={(event) => seek(Number(event.target.value))} style={{ "--progress": `${total ? (currentTime / total) * 100 : 0}%` } as React.CSSProperties} />
+          <span>{total ? formatTime(total) : "--:--"}</span>
+        </div>
+        <div className={styles.mainControls}>
+          <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
+          <button className={styles.playButton} onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}><Icon name={isPlaying ? "pause" : "play"} size={32} /></button>
+          <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
+        </div>
       </section>
-
-      <GlassSurface width="min(100%, 680px)" height="auto" borderRadius="var(--control-card-radius)" borderWidth={0.07} brightness={50} opacity={0.93} blur={11} displace={0} backgroundOpacity={0} saturation={1} distortionScale={-180} redOffset={0} greenOffset={10} blueOffset={20} xChannel="R" yChannel="G" mixBlendMode="difference" className={styles.glassPlayer} style={{ aspectRatio: "1.9" }}>
-        <section className={styles.glassPlayerContent} aria-label="Music controls">
-          <div className={styles.cardHeading}>
-            <CoverArt track={track} compact />
-            <div className={styles.cardCopy}><h1>{track.title}</h1><p>{track.artist}</p></div>
-            <div className={styles.waveform} aria-hidden="true">{[3.45,2.55,2.95,2.2,2.4,1.7,1.25].map((height,index) => <i key={index} style={{ height: `${height}cqw` }} />)}</div>
-          </div>
-          <div className={styles.progressRow}>
-            <span>{formatTime(progress)}</span>
-            <input aria-label="Song progress" type="range" min="0" max={track.duration} value={progress} onChange={(event) => setProgress(Number(event.target.value))} style={{ "--progress": `${(progress / track.duration) * 100}%` } as React.CSSProperties} />
-            <span>{formatTime(track.duration)}</span>
-          </div>
-          <div className={styles.mainControls}>
-            <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
-            <button className={styles.playButton} onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Resume"}><Icon name={isPlaying ? "pause" : "play"} size={32} /></button>
-            <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
-          </div>
-        </section>
-      </GlassSurface>
-    </main>
-  );
+    </GlassSurface>
+  </main>;
 }

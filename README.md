@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mubo
 
-## Getting Started
+Mubo is a self-hosted web music player. Point it at a folder on the server and everyone who can reach the Mubo URL can browse and stream that library from a desktop or mobile browser.
 
-First, run the development server:
+## Run with Docker Compose
+
+Requirements: Docker Engine with Docker Compose.
+
+1. Copy `.env.example` to `.env`.
+2. Set `MUSIC_PATH` in `.env` to the **absolute path on the Docker host** that contains your music.
+3. Start Mubo:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://your-server:3000`. Change `MUBO_PORT` in `.env` if port 3000 is already used.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The music directory is mounted read-only. Mubo never changes or deletes your files. New and removed songs appear on the next browser refresh after `LIBRARY_SCAN_INTERVAL_MS` (15 seconds by default), without rebuilding the image.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Music folder layout
 
-## Learn More
+Mubo recursively scans MP3, M4A, AAC, FLAC, OGG, Opus, WAV, and WebM audio. For useful artist and album names, arrange files like this:
 
-To learn more about Next.js, take a look at the following resources:
+```text
+/srv/music/
+  Artist name/
+    Album name/
+      01 - Song title.mp3
+      02 - Another song.flac
+      cover.jpg
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The filename becomes the song title, the containing directory becomes the album, and its parent becomes the artist. Numeric track prefixes are removed. Add `cover.jpg`, `cover.jpeg`, `cover.png`, `cover.webp`, `folder.jpg`, `folder.png`, `album.jpg`, or `album.png` beside the songs for album art.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Docker CLI alternative
 
-## Deploy on Vercel
+```bash
+docker build -t mubo .
+docker run -d --name mubo --restart unless-stopped -p 3000:3000 -v /srv/music:/music:ro -e MUSIC_PATH=/music mubo
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Replace `/srv/music` with your host folder. On Windows PowerShell, a bind mount can look like `-v "D:\Music:/music:ro"`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Reverse proxy and public access
+
+For internet-facing installs, place Mubo behind a reverse proxy such as Caddy, nginx, or Traefik and enable HTTPS. Mubo intentionally has no user accounts: anyone who can reach the URL can browse and play every indexed song. Restrict access at the reverse proxy or with a VPN if the library should be private.
+
+The health endpoint is `GET /api/health`. Streaming uses byte-range responses, so browser seeking and resume work through compatible reverse proxies. Avoid proxy response buffering on the stream route if your proxy enables it globally.
+
+## Local development
+
+```bash
+npm ci
+$env:MUSIC_PATH="D:\Music"
+npm run dev
+```
+
+Then open `http://localhost:3000`.
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MUSIC_PATH` | `/music` in the image | Music directory visible to the Node.js process |
+| `MUBO_PORT` | `3000` | Host port used by Docker Compose |
+| `LIBRARY_SCAN_INTERVAL_MS` | `15000` | In-memory library scan cache duration |

@@ -84,13 +84,13 @@ export default function BottomDock() {
   }
 
   function openPlayer() {
-    router.push(`/player/${currentTrack.slug}`);
+    if (currentTrack) router.push(`/player/${currentTrack.slug}`);
   }
 
   return (
     <nav className={styles.dock} aria-label="Playback and navigation">
       {/* Top Bar: Now Playing / Mini Player */}
-      <div className={styles.miniPlayerWrapper}>
+      {currentTrack && <div className={styles.miniPlayerWrapper}>
         <GlassSurface
           width="100%"
           height="100%"
@@ -176,7 +176,7 @@ export default function BottomDock() {
             </button>
           </div>
         </GlassSurface>
-      </div>
+      </div>}
 
       {/* Bottom Bar: Navigation and Search */}
       <div className={styles.navRow}>

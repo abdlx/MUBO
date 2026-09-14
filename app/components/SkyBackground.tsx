@@ -120,8 +120,6 @@ export default function SkyBackground({ onSlotChange }: SkyBackgroundProps) {
       onSlotChange?.(slot);
     }
 
-    updateSlot();
-
     // Check every 15 seconds so changes at boundary minutes cross-fade automatically
     const interval = window.setInterval(updateSlot, 15000);
     return () => window.clearInterval(interval);

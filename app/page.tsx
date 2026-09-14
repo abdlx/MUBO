@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
 import BottomDock from "./components/BottomDock";
 import SkyBackground, { getSkySlotForDate } from "./components/SkyBackground";
-import { tracks } from "./data/tracks";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
 
@@ -23,27 +22,15 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
   return <svg aria-hidden="true" fill="none" height={size} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width={size}>{paths[name]}</svg>;
 }
 
-const categories = ["All", "Music", "Playlists", "Artists", "Albums"];
-const recentItems = tracks.map((track, index) => ({
-  ...track,
-  type: index === 1 || index === 3 ? "Albums" : "Music",
-}));
+const categories = ["All", "Songs", "Albums", "Artists"];
 const mixes = [
   { title: "Discover Weekly", note: "Fresh finds, picked for your ears.", art: "discover" },
   { title: "Chill Mix", note: "Laid-back color for your day.", art: "chill" },
   { title: "Late Night", note: "For when the whole world gets quiet.", art: "night" },
   { title: "Focus Flow", note: "Stay in the zone and let it unfold.", art: "focus" },
 ];
-const artists = [
-  { name: "Alex Warren", initials: "AW", art: "clay" },
-  { name: "The Weeknd", initials: "TW", art: "ember" },
-  { name: "SZA", initials: "SZ", art: "rose" },
-  { name: "Drake", initials: "DR", art: "mono" },
-  { name: "Noah Kahan", initials: "NK", art: "dusk" },
-];
-
 export default function Home() {
-  const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, playTrack, togglePlay } = usePlayer();
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [showAllRecent, setShowAllRecent] = useState(false);
@@ -51,13 +38,19 @@ export default function Home() {
 
   const filteredRecent = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    const result = recentItems.filter((item) => {
-      const categoryMatches = activeCategory === "All" || item.type === activeCategory;
-      const queryMatches = !normalizedQuery || item.title.toLowerCase().includes(normalizedQuery) || item.artist.toLowerCase().includes(normalizedQuery);
-      return categoryMatches && queryMatches;
+    const result = tracks.filter((item) => {
+      const fields = activeCategory === "Songs" ? [item.title] : activeCategory === "Albums" ? [item.album] : activeCategory === "Artists" ? [item.artist] : [item.title, item.artist, item.album];
+      return !normalizedQuery || fields.some((field) => field.toLowerCase().includes(normalizedQuery));
     });
     return showAllRecent ? result : result.slice(0, 4);
-  }, [activeCategory, query, showAllRecent]);
+  }, [activeCategory, query, showAllRecent, tracks]);
+
+  const artists = useMemo(() => Array.from(new Set(tracks.map((track) => track.artist))).slice(0, 8).map((name, index) => ({
+    name,
+    initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
+    art: ["clay", "ember", "rose", "mono", "dusk"][index % 5],
+  })), [tracks]);
+  const featured = tracks[0] ?? null;
 
   return (
     <main className="home-shell" id="top">
@@ -79,22 +72,22 @@ export default function Home() {
           {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{category}</button>)}
         </div>
 
-        <section className="hero-card" aria-label="Featured playlist">
+        {featured && <section className="hero-card" aria-label="Featured track">
           <Image className="hero-image" src="/afterglow-cover.png" alt="A car driving on a coastal road at sunset" fill priority sizes="(max-width: 760px) 100vw, 1060px" />
           <div className="hero-scrim" />
           <div className="hero-copy">
-            <p>For your evening</p><h2>Night Drives</h2><span>A playlist for late nights<br />and clearer thoughts.</span>
-            <button className="hero-play" onClick={() => { if (currentTrack.slug === tracks[0].slug) togglePlay(); else playTrack(tracks[0]); }}>
-              <span><Icon name={currentTrack.slug === tracks[0].slug && isPlaying ? "pause" : "play"} size={24} /></span>
-              {currentTrack.slug === tracks[0].slug && isPlaying ? "Pause" : "Play"}
+            <p>From your library</p><h2>{featured.title}</h2><span>{featured.artist}<br />{featured.album}</span>
+            <button className="hero-play" onClick={() => { if (currentTrack?.slug === featured.slug) togglePlay(); else playTrack(featured); }}>
+              <span><Icon name={currentTrack?.slug === featured.slug && isPlaying ? "pause" : "play"} size={24} /></span>
+              {currentTrack?.slug === featured.slug && isPlaying ? "Pause" : "Play"}
             </button>
           </div>
           <div className="hero-dots" aria-hidden="true"><i /><i /><i /></div>
-        </section>
+        </section>}
 
         <section className="home-section" id="recently-played">
           <div className="section-heading">
-            <h2>Recently Played</h2>
+            <h2>Your Music</h2>
             <button onClick={() => setShowAllRecent((current) => !current)}>{showAllRecent ? "Show less" : "See all"}<Icon name="arrow" size={18} /></button>
           </div>
           {filteredRecent.length ? (
@@ -108,14 +101,14 @@ export default function Home() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (currentTrack.slug === item.slug) togglePlay();
+                        if (currentTrack?.slug === item.slug) togglePlay();
                         else playTrack(item);
                       }}
                       role="button"
                       tabIndex={0}
                       aria-label={`Play ${item.title}`}
                     >
-                      <Icon name={currentTrack.slug === item.slug && isPlaying ? "pause" : "play"} size={22} />
+                      <Icon name={currentTrack?.slug === item.slug && isPlaying ? "pause" : "play"} size={22} />
                     </span>
                   </span>
                   <strong>{item.title}</strong><small>{item.artist}</small>
@@ -123,21 +116,21 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="empty-state"><Icon name="sparkle" size={24} /><p>No matches yet. Try another song or artist.</p><button onClick={() => { setQuery(""); setActiveCategory("All"); }}>Reset filters</button></div>
+            <div className="empty-state"><Icon name="sparkle" size={24} /><p>{isLoading ? "Scanning your music library…" : !musicPathConfigured ? "Set MUSIC_PATH to your music folder, then restart Mubo." : libraryError ? `Library error: ${libraryError}` : tracks.length === 0 ? "No supported audio files were found in your music folder." : "No matches yet. Try another song or artist."}</p>{tracks.length > 0 && <button onClick={() => { setQuery(""); setActiveCategory("All"); }}>Reset filters</button>}</div>
           )}
         </section>
 
-        <section className="home-section" id="made-for-you">
-          <div className="section-heading"><h2>Made For You</h2><button>See all<Icon name="arrow" size={18} /></button></div>
+        {tracks.length > 0 && <section className="home-section" id="made-for-you">
+          <div className="section-heading"><h2>Quick Picks</h2><button onClick={() => { setShowAllRecent(true); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}>See all<Icon name="arrow" size={18} /></button></div>
           <div className="mix-grid">
-            {mixes.map((mix, index) => <button className={`mix-card ${mix.art}`} key={mix.title}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{mix.title}</strong><small>{mix.note}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
+            {mixes.slice(0, tracks.length).map((mix, index) => <button className={`mix-card ${mix.art}`} key={tracks[index].id} onClick={() => playTrack(tracks[index])}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{tracks[index].title}</strong><small>{tracks[index].artist} · {tracks[index].album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
-        </section>
+        </section>}
 
         <section className="home-section artists-section" id="your-library">
-          <div className="section-heading"><h2>Your Top Artists</h2><button>See all<Icon name="arrow" size={18} /></button></div>
+          <div className="section-heading"><h2>Your Artists</h2><button onClick={() => { setActiveCategory("Artists"); setQuery(""); setShowAllRecent(true); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}>See all<Icon name="arrow" size={18} /></button></div>
           <div className="artist-row">
-            {artists.map((artist) => <button className="artist-card" key={artist.name}><span className={`artist-avatar ${artist.art}`}><i>{artist.initials}</i></span><strong>{artist.name}</strong></button>)}
+            {artists.map((artist) => <button className="artist-card" key={artist.name} onClick={() => { setActiveCategory("Artists"); setQuery(artist.name); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}><span className={`artist-avatar ${artist.art}`}><i>{artist.initials}</i></span><strong>{artist.name}</strong></button>)}
           </div>
         </section>
       </div>
