@@ -4,8 +4,8 @@ services:
     image: mubo:local
     container_name: mubo
     restart: unless-stopped
-    ports:
-      - "${MUBO_PORT:-3000}:3000"
+    expose:
+      - "3000"
     environment:
       MUSIC_PATH: /music
       LIBRARY_SCAN_INTERVAL_MS: ${LIBRARY_SCAN_INTERVAL_MS:-15000}

@@ -8,13 +8,15 @@ Requirements: Docker Engine with Docker Compose.
 
 1. Copy `.env.example` to `.env`.
 2. Set `MUSIC_PATH` in `.env` to the **absolute path on the Docker host** that contains your music.
-3. Start Mubo:
+3. Start Mubo locally with the port-publishing override:
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
 
 Open `http://your-server:3000`. Change `MUBO_PORT` in `.env` if port 3000 is already used.
+
+On Coolify, deploy `docker-compose.yml` directly without the local override. Coolify routes the configured domain to the container's exposed port 3000, so no host port is published.
 
 The music directory is mounted read-only. Mubo never changes or deletes your files. New and removed songs appear on the next browser refresh after `LIBRARY_SCAN_INTERVAL_MS` (15 seconds by default), without rebuilding the image.
 

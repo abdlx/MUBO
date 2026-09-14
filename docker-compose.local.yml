@@ -1,0 +1,4 @@
+services:
+  mubo:
+    ports:
+      - "${MUBO_PORT:-3000}:3000"
