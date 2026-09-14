@@ -101,11 +101,13 @@ button { color: inherit; }
 .artists-section { padding-bottom: 10px; }
 .artist-row { display: flex; gap: clamp(16px,3.65vw,31px); margin-right: calc(clamp(20px,5vw,42px) * -1); overflow-x: auto; padding-right: clamp(20px,5vw,42px); scrollbar-width: none; }
 .artist-row::-webkit-scrollbar { display: none; }
-.artist-card { background: transparent; border: 0; cursor: pointer; flex: 0 0 clamp(74px,17.2vw,146px); min-width: 0; padding: 0; }
+.artist-card { background: transparent; border: 0; color: inherit; cursor: pointer; flex: 0 0 clamp(74px,17.2vw,146px); min-width: 0; padding: 0; text-decoration: none; }
 .artist-avatar { border: 1px solid rgba(255,255,255,.1); border-radius: 50%; box-shadow: 0 18px 35px rgba(0,0,0,.26); display: grid; overflow: hidden; place-items: center; position: relative; transition: transform .25s; aspect-ratio: 1; }
 .artist-card:hover .artist-avatar { transform: translateY(-4px) scale(1.015); }
 .artist-avatar::before { background: radial-gradient(ellipse at 50% 12%,rgba(255,255,255,.36),transparent 27%),#111; border-radius: 46% 46% 38% 38%; content: ""; height: 72%; left: 24%; position: absolute; top: 25%; width: 52%; }
 .artist-avatar::after { background: rgba(0,0,0,.28); content: ""; inset: 62% -20% -20%; position: absolute; transform: rotate(-8deg); }
+.artist-avatar.has-image::before,.artist-avatar.has-image::after { display: none; }
+.artist-avatar img { object-fit: cover; z-index: 1; }
 .artist-avatar i { bottom: 14%; font-size: clamp(17px,2.2vw,24px); font-style: normal; font-weight: 720; letter-spacing: -.08em; opacity: .75; position: absolute; right: 12%; z-index: 2; }
 .artist-avatar.clay { background: linear-gradient(145deg,#bdaea8,#65514a); }
 .artist-avatar.ember { background: radial-gradient(circle at 65% 30%,#a34432,transparent 38%),#16090a; }

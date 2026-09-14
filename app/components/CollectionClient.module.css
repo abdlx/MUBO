@@ -1,0 +1,63 @@
+.shell { background: #070a0e; color: white; min-height: 100svh; overflow: hidden; position: relative; isolation: isolate; }
+.backdrop { filter: blur(55px) saturate(1.2); object-fit: cover; opacity: .28; transform: scale(1.2); z-index: -3; }
+.wash { background: linear-gradient(180deg,rgba(5,8,12,.34),#070a0e 48%); inset: 0; position: absolute; z-index: -2; }
+.content { margin: 0 auto; max-width: 920px; padding: max(22px,env(safe-area-inset-top)) clamp(18px,5vw,48px) 90px; }
+.topbar { align-items: center; display: grid; grid-template-columns: 44px 1fr 44px; margin-bottom: clamp(30px,7vh,72px); }
+.topbar a { color: white; display: grid; font-size: 38px; height: 44px; place-items: center; text-decoration: none; width: 44px; }
+.topbar a span { transform: translateY(-2px); }
+.topbar strong { font-size: 14px; letter-spacing: .2em; text-align: center; text-transform: uppercase; }
+.hero { align-items: end; display: grid; gap: clamp(24px,5vw,50px); grid-template-columns: minmax(180px,280px) minmax(0,1fr); }
+.cover,.albumCover { background: linear-gradient(145deg,#213956,#8d5b63); box-shadow: 0 28px 70px rgba(0,0,0,.42); overflow: hidden; position: relative; aspect-ratio: 1; }
+.cover { border: 1px solid rgba(255,255,255,.16); border-radius: 28px; width: 100%; }
+.cover[data-art="field"],.albumCover[data-art="field"] { background: linear-gradient(145deg,#8b9c80,#364238); }
+.cover[data-art="electric"],.albumCover[data-art="electric"] { background: linear-gradient(145deg,#102c56,#111323); }
+.cover[data-art="ocean"],.albumCover[data-art="ocean"] { background: linear-gradient(145deg,#1b5970,#79a9ae); }
+.cover[data-art="apricot"],.albumCover[data-art="apricot"] { background: linear-gradient(145deg,#f39b72,#9b365f 55%,#33214c); }
+.cover img,.albumCover img { object-fit: cover; }
+.roundCover { border-radius: 50%; }
+.heroCopy { min-width: 0; padding-bottom: 4px; }
+.heroCopy > p { color: rgba(255,255,255,.55); font-size: 11px; font-weight: 700; letter-spacing: .22em; margin: 0 0 10px; text-transform: uppercase; }
+.heroCopy h1 { font-size: clamp(34px,7vw,70px); letter-spacing: -.06em; line-height: .94; margin: 0; overflow-wrap: anywhere; }
+.heroCopy > span { color: rgba(255,255,255,.72); display: block; font-size: clamp(14px,2vw,18px); margin-top: 15px; }
+.heroCopy > small { color: rgba(255,255,255,.43); display: block; margin-top: 8px; }
+.playAll { align-items: center; background: white; border: 0; border-radius: 999px; color: #0c1015; cursor: pointer; display: flex; font-weight: 750; gap: 9px; margin-top: 24px; padding: 12px 21px; }
+.playAll svg { fill: currentColor; height: 18px; width: 18px; }
+.section { margin-top: clamp(42px,8vw,72px); }
+.section h2 { font-size: clamp(22px,3.5vw,30px); letter-spacing: -.04em; margin: 0 0 18px; }
+.albumGrid { display: flex; gap: 18px; margin-right: calc(clamp(18px,5vw,48px) * -1); overflow-x: auto; padding-right: clamp(18px,5vw,48px); scrollbar-width: none; }
+.albumCard { color: inherit; flex: 0 0 clamp(130px,24vw,190px); min-width: 0; text-decoration: none; }
+.albumCover { border-radius: 18px; box-shadow: 0 18px 40px rgba(0,0,0,.28); }
+.albumCard > strong,.albumCard > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.albumCard > strong { font-size: 15px; margin-top: 11px; }
+.albumCard > span { color: rgba(255,255,255,.53); font-size: 13px; margin-top: 4px; }
+.trackList { border-top: 1px solid rgba(255,255,255,.09); }
+.trackRow { align-items: center; border-bottom: 1px solid rgba(255,255,255,.07); display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) minmax(90px,25%) 46px; min-height: 68px; transition: background .2s; }
+.trackRow:hover,.activeTrack { background: rgba(255,255,255,.045); }
+.trackMain { align-items: center; background: none; border: 0; cursor: pointer; display: grid; gap: 14px; grid-template-columns: 28px minmax(0,1fr); min-width: 0; padding: 10px 8px; text-align: left; }
+.trackNumber { color: rgba(255,255,255,.5); display: grid; font-variant-numeric: tabular-nums; place-items: center; }
+.trackNumber svg { fill: currentColor; height: 16px; width: 16px; }
+.trackCopy { min-width: 0; }
+.trackCopy strong,.trackCopy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trackCopy strong { font-size: 15px; }
+.trackCopy small,.rowAlbum,.duration { color: rgba(255,255,255,.48); font-size: 13px; }
+.trackCopy small { margin-top: 4px; }
+.rowAlbum { overflow: hidden; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.rowAlbum:hover { color: white; text-decoration: underline; }
+.duration { font-variant-numeric: tabular-nums; padding-right: 8px; text-align: right; }
+.message { left: 50%; position: absolute; text-align: center; top: 50%; transform: translate(-50%,-50%); }
+.message a { color: white; }
+
+@media (max-width:600px) {
+  .content { padding-bottom: 54px; }
+  .topbar { margin-bottom: 25px; }
+  .hero { align-items: center; gap: 22px; grid-template-columns: minmax(112px,38vw) minmax(0,1fr); }
+  .cover { border-radius: 18px; }
+  .roundCover { border-radius: 50%; }
+  .heroCopy h1 { font-size: clamp(28px,9vw,46px); }
+  .heroCopy > span { font-size: 13px; margin-top: 10px; }
+  .heroCopy > small { display: none; }
+  .playAll { margin-top: 15px; padding: 9px 15px; }
+  .trackRow { gap: 8px; grid-template-columns: minmax(0,1fr) 40px; }
+  .rowAlbum { display: none; }
+  .duration { font-size: 12px; padding-right: 5px; }
+}

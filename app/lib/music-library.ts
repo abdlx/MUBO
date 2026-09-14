@@ -15,7 +15,6 @@ type LibraryEntry = Track & {
   absolutePath: string;
   coverPath: string | null;
   embeddedCover: boolean;
-  trackNumber: number | null;
 };
 let cache: { root: string; expiresAt: number; entries: LibraryEntry[] } | null = null;
 
@@ -30,6 +29,10 @@ function safeName(value: string) {
 
 function cleanTag(value: string | undefined) {
   return value?.replace(/\s+/g, " ").trim() || null;
+}
+
+function identityId(kind: "artist" | "album", ...values: string[]) {
+  return createHash("sha256").update(`${kind}:${values.map((value) => value.toLocaleLowerCase()).join("\0")}`).digest("hex").slice(0, 20);
 }
 
 async function mapConcurrent<T, R>(items: T[], limit: number, worker: (item: T, index: number) => Promise<R>) {
@@ -91,40 +94,61 @@ export async function getLibrary(): Promise<{ root: string | null; entries: Libr
       const fallbackTitle = safeName(path.basename(absolutePath, path.extname(absolutePath))) || "Untitled";
       let title = fallbackTitle;
       let artist = fallbackArtist;
+      let artists = [fallbackArtist];
       let album = fallbackAlbum;
+      let albumArtist = fallbackArtist;
       let duration: number | null = null;
       let embeddedCover = false;
       let trackNumber: number | null = null;
+      let discNumber: number | null = null;
+      let year: number | null = null;
+      let genres: string[] = [];
       try {
         const metadata = await parseFile(absolutePath, { duration: true });
         title = cleanTag(metadata.common.title) ?? fallbackTitle;
         artist = cleanTag(metadata.common.artist) ?? cleanTag(metadata.common.albumartist) ?? fallbackArtist;
+        artists = (metadata.common.artists ?? [artist]).map(cleanTag).filter((value): value is string => Boolean(value));
+        if (!artists.length) artists = [artist];
         album = cleanTag(metadata.common.album) ?? fallbackAlbum;
+        albumArtist = cleanTag(metadata.common.albumartist) ?? artist;
         duration = Number.isFinite(metadata.format.duration) && metadata.format.duration! > 0 ? metadata.format.duration! : null;
         embeddedCover = Boolean(metadata.common.picture?.length);
         trackNumber = metadata.common.track.no;
+        discNumber = metadata.common.disk.no;
+        year = metadata.common.year ?? null;
+        genres = (metadata.common.genre ?? []).map(cleanTag).filter((value): value is string => Boolean(value));
       } catch {
         // A damaged or unusual file should not prevent the rest of the library loading.
       }
+      const artistIds = artists.map((name) => identityId("artist", name));
+      const albumId = identityId("album", albumArtist, album);
       return {
         id,
         slug: id,
         title,
         artist,
+        artists,
+        artistIds,
         album,
+        albumArtist,
+        albumId,
         duration,
+        trackNumber,
+        discNumber,
+        year,
+        genres,
         art: ART_STYLES[Number.parseInt(id.slice(0, 2), 16) % ART_STYLES.length],
         coverImage: coverPath || embeddedCover ? `/api/tracks/${id}/cover` : null,
         streamUrl: `/api/tracks/${id}/stream`,
         absolutePath,
         coverPath: coverPath ?? null,
         embeddedCover,
-        trackNumber,
       } satisfies LibraryEntry;
     });
     entries.sort((a, b) =>
       a.artist.localeCompare(b.artist, undefined, { sensitivity: "base" }) ||
       a.album.localeCompare(b.album, undefined, { sensitivity: "base" }) ||
+      (a.discNumber ?? 1) - (b.discNumber ?? 1) ||
       (a.trackNumber ?? Number.MAX_SAFE_INTEGER) - (b.trackNumber ?? Number.MAX_SAFE_INTEGER) ||
       a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" }),
     );
@@ -146,8 +170,16 @@ export function publicTrack(entry: LibraryEntry): Track {
     slug: entry.slug,
     title: entry.title,
     artist: entry.artist,
+    artists: entry.artists,
+    artistIds: entry.artistIds,
     album: entry.album,
+    albumArtist: entry.albumArtist,
+    albumId: entry.albumId,
     duration: entry.duration,
+    trackNumber: entry.trackNumber,
+    discNumber: entry.discNumber,
+    year: entry.year,
+    genres: entry.genres,
     art: entry.art,
     coverImage: entry.coverImage,
     streamUrl: entry.streamUrl,

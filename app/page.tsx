@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
 import BottomDock from "./components/BottomDock";
 import SkyBackground, { getSkySlotForDate } from "./components/SkyBackground";
+import { getAlbums, getArtists } from "./data/library";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
 
@@ -39,18 +40,21 @@ export default function Home() {
   const filteredRecent = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const result = tracks.filter((item) => {
-      const fields = activeCategory === "Songs" ? [item.title] : activeCategory === "Albums" ? [item.album] : activeCategory === "Artists" ? [item.artist] : [item.title, item.artist, item.album];
+      const fields = activeCategory === "Songs" ? [item.title] : activeCategory === "Albums" ? [item.album, item.albumArtist] : activeCategory === "Artists" ? item.artists : [item.title, ...item.artists, item.album, item.albumArtist];
       return !normalizedQuery || fields.some((field) => field.toLowerCase().includes(normalizedQuery));
     });
     return showAllRecent ? result : result.slice(0, 4);
   }, [activeCategory, query, showAllRecent, tracks]);
 
-  const artists = useMemo(() => Array.from(new Set(tracks.map((track) => track.artist))).slice(0, 8).map((name, index) => ({
-    name,
-    initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
-    art: ["clay", "ember", "rose", "mono", "dusk"][index % 5],
-  })), [tracks]);
+  const albums = useMemo(() => getAlbums(tracks), [tracks]);
+  const artists = useMemo(() => getArtists(tracks), [tracks]);
   const featured = tracks[0] ?? null;
+
+  function chooseCategory(category: string) {
+    setActiveCategory(category);
+    const target = category === "Albums" ? "albums" : category === "Artists" ? "your-library" : "recently-played";
+    window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  }
 
   return (
     <main className="home-shell" id="top">
@@ -69,11 +73,11 @@ export default function Home() {
         </label>
 
         <div className="category-row" aria-label="Browse categories">
-          {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{category}</button>)}
+          {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => chooseCategory(category)}>{category}</button>)}
         </div>
 
         {featured && <section className="hero-card" aria-label="Featured track">
-          <Image className="hero-image" src="/afterglow-cover.png" alt="A car driving on a coastal road at sunset" fill priority sizes="(max-width: 760px) 100vw, 1060px" />
+          <Image className="hero-image" src={featured.coverImage || "/afterglow-cover.png"} alt="" fill priority sizes="(max-width: 760px) 100vw, 1060px" />
           <div className="hero-scrim" />
           <div className="hero-copy">
             <p>From your library</p><h2>{featured.title}</h2><span>{featured.artist}<br />{featured.album}</span>
@@ -120,6 +124,16 @@ export default function Home() {
           )}
         </section>
 
+        {albums.length > 0 && <section className="home-section" id="albums">
+          <div className="section-heading"><h2>Your Albums</h2><button onClick={() => chooseCategory("Albums")}>{albums.length} total<Icon name="arrow" size={18} /></button></div>
+          <div className="recent-grid">
+            {albums.map((album) => <Link className="album-card" href={`/album/${album.id}`} key={album.id} aria-label={`Open ${album.title} by ${album.artist}`}>
+              <span className={`album-art ${album.art}`}>{album.coverImage && <Image src={album.coverImage} alt="" fill sizes="220px" />}</span>
+              <strong>{album.title}</strong><small>{album.artist}{album.year ? ` · ${album.year}` : ""}</small>
+            </Link>)}
+          </div>
+        </section>}
+
         {tracks.length > 0 && <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Quick Picks</h2><button onClick={() => { setShowAllRecent(true); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}>See all<Icon name="arrow" size={18} /></button></div>
           <div className="mix-grid">
@@ -128,9 +142,9 @@ export default function Home() {
         </section>}
 
         <section className="home-section artists-section" id="your-library">
-          <div className="section-heading"><h2>Your Artists</h2><button onClick={() => { setActiveCategory("Artists"); setQuery(""); setShowAllRecent(true); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}>See all<Icon name="arrow" size={18} /></button></div>
+          <div className="section-heading"><h2>Your Artists</h2><button onClick={() => chooseCategory("Artists")}>{artists.length} total<Icon name="arrow" size={18} /></button></div>
           <div className="artist-row">
-            {artists.map((artist) => <button className="artist-card" key={artist.name} onClick={() => { setActiveCategory("Artists"); setQuery(artist.name); document.getElementById("recently-played")?.scrollIntoView({ behavior: "smooth" }); }}><span className={`artist-avatar ${artist.art}`}><i>{artist.initials}</i></span><strong>{artist.name}</strong></button>)}
+            {artists.map((artist) => <Link className="artist-card" href={`/artist/${artist.id}`} key={artist.id}><span className={`artist-avatar ${artist.art} ${artist.coverImage ? "has-image" : ""}`}>{artist.coverImage ? <Image src={artist.coverImage} alt="" fill sizes="150px" /> : <i>{artist.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</i>}</span><strong>{artist.name}</strong></Link>)}
           </div>
         </section>
       </div>
