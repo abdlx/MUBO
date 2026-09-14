@@ -1,4 +1,4 @@
-.playerShell { position: relative; min-height: 100svh; width: 100%; overflow: hidden; display: grid; grid-template-rows: auto minmax(0,1fr) auto; padding: 28px clamp(22px,5vw,72px) 26px; isolation: isolate; --player-muted: rgba(255,255,255,.64); }
+.playerShell { position: relative; height: 100dvh; min-height: 100svh; width: 100%; overflow: hidden; display: grid; grid-template-rows: auto minmax(0,1fr) auto; padding: max(28px,env(safe-area-inset-top)) clamp(22px,5vw,72px) max(26px,env(safe-area-inset-bottom)); isolation: isolate; --player-muted: rgba(255,255,255,.64); }
 .playerMessage { align-self: center; justify-self: center; color: var(--player-muted); text-align: center; }
 .playerMessage a { color: white; }
 .backgroundArt { object-fit: cover; transform: scale(1.16); filter: blur(5px) saturate(1.15); z-index: -3; }
@@ -61,7 +61,12 @@
 .playButton:hover { transform: scale(1.06); }
 
 @media (max-width:520px) {
-  .playerShell { padding: 18px 14px 14px; }
-  .artworkWrap { margin: 16px 0; width: min(43vh,84vw); }
+  .playerShell { grid-template-rows: 40px minmax(0,1fr) auto; padding: max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom)); }
+  .topbar { align-self: start; min-height: 40px; }
+  .artworkWrap { margin: 12px 0; transform: translateY(-clamp(28px,5dvh,44px)); width: min(43dvh,84vw); }
+  .glassPlayer { transform: none; }
+}
+@media (max-width:520px) and (max-height:700px) {
+  .artworkWrap { transform: translateY(-16px); width: min(38dvh,78vw); }
 }
 @media (prefers-reduced-motion:reduce) { .playerShell * { transition: none !important; } }
