@@ -8,13 +8,12 @@ body { background: var(--background); color: var(--text); font-family: var(--fon
 button, input { font: inherit; }
 button { color: inherit; }
 
-.home-shell { isolation: isolate; min-height: 100svh; overflow: hidden; position: relative; background: radial-gradient(circle at 13% -4%, rgba(47,80,137,.23), transparent 27rem), radial-gradient(circle at 94% 38%, rgba(24,70,75,.13), transparent 25rem), linear-gradient(180deg,#080c12 0%,#05080b 48%,#080b0e 100%); }
-.home-shell::before { background-image: url("/afterglow-cover.png"); background-position: 50% 20%; background-size: cover; content: ""; filter: blur(60px) saturate(.65); inset: -10% -8% 55%; opacity: .1; position: absolute; z-index: -2; }
+.home-shell { isolation: isolate; min-height: 100svh; overflow: hidden; position: relative; background: transparent; }
 .home-shell::after { background-image: radial-gradient(rgba(255,255,255,.15) .45px,transparent .45px); background-size: 5px 5px; content: ""; inset: 0; opacity: .045; pointer-events: none; position: absolute; z-index: 5; }
 .ambient { border-radius: 50%; pointer-events: none; position: absolute; z-index: -1; }
 .ambient-one { background: rgba(72,111,173,.08); height: 460px; left: -260px; top: -230px; width: 460px; }
 .ambient-two { background: rgba(72,132,123,.06); height: 400px; right: -260px; top: 640px; width: 400px; }
-.home-content { margin: 0 auto; max-width: 848px; padding: clamp(54px,12.5vw,106px) clamp(20px,5vw,42px) 154px; }
+.home-content { margin: 0 auto; max-width: 848px; padding: clamp(54px,12.5vw,106px) clamp(20px,5vw,42px) 190px; }
 .home-header { align-items: center; display: flex; justify-content: space-between; }
 .eyebrow { color: var(--muted); font-size: clamp(14px,2.35vw,20px); letter-spacing: -.01em; margin: 0 0 7px; }
 .home-header h1 { font-size: clamp(32px,6.25vw,53px); letter-spacing: -.055em; line-height: .95; margin: 0; }
@@ -117,7 +116,7 @@ button { color: inherit; }
 button:focus-visible,input:focus-visible { outline: 2px solid rgba(255,255,255,.8); outline-offset: 3px; }
 
 @media (max-width:560px) {
-  .home-content { padding-bottom: 126px; }
+  .home-content { padding-bottom: 160px; }
   .search-field { gap: 12px; margin-top: 25px; }
   .search-field svg { height: 21px; width: 21px; }
   .category-row { margin-bottom: 18px; margin-top: 14px; }

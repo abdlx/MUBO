@@ -3,7 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { usePlayer } from "./context/PlayerContext";
 import BottomDock from "./components/BottomDock";
+import SkyBackground, { getSkySlotForDate } from "./components/SkyBackground";
 import { tracks } from "./data/tracks";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
@@ -41,10 +43,11 @@ const artists = [
 ];
 
 export default function Home() {
+  const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer();
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
-  const [heroPlaying, setHeroPlaying] = useState(false);
   const [showAllRecent, setShowAllRecent] = useState(false);
+  const [greeting, setGreeting] = useState(() => getSkySlotForDate().greeting);
 
   const filteredRecent = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -58,10 +61,11 @@ export default function Home() {
 
   return (
     <main className="home-shell" id="top">
+      <SkyBackground onSlotChange={(slot) => setGreeting(slot.greeting)} />
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <div className="home-content">
         <header className="home-header">
-          <div><p className="eyebrow">Good evening</p><h1>Let&apos;s listen</h1></div>
+          <div><p className="eyebrow">{greeting}</p><h1>Let&apos;s listen</h1></div>
           <button className="profile" aria-label="Open profile"><Image src="/afterglow-cover.png" alt="" fill sizes="58px" /><span>A</span></button>
         </header>
 
@@ -80,7 +84,10 @@ export default function Home() {
           <div className="hero-scrim" />
           <div className="hero-copy">
             <p>For your evening</p><h2>Night Drives</h2><span>A playlist for late nights<br />and clearer thoughts.</span>
-            <button className="hero-play" onClick={() => setHeroPlaying((playing) => !playing)}><span><Icon name={heroPlaying ? "pause" : "play"} size={24} /></span>{heroPlaying ? "Pause" : "Play"}</button>
+            <button className="hero-play" onClick={() => { if (currentTrack.slug === tracks[0].slug) togglePlay(); else playTrack(tracks[0]); }}>
+              <span><Icon name={currentTrack.slug === tracks[0].slug && isPlaying ? "pause" : "play"} size={24} /></span>
+              {currentTrack.slug === tracks[0].slug && isPlaying ? "Pause" : "Play"}
+            </button>
           </div>
           <div className="hero-dots" aria-hidden="true"><i /><i /><i /></div>
         </section>
@@ -94,7 +101,23 @@ export default function Home() {
             <div className="recent-grid">
               {filteredRecent.map((item) => (
                 <Link className="album-card" href={`/player/${item.slug}`} key={item.title} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
-                  <span className={`album-art ${item.art}`}>{(item.coverImage || item.art === "road") && <Image src={item.coverImage || "/afterglow-cover.png"} alt={item.title} fill sizes="220px" />}<span className="hover-play"><Icon name="play" size={22} /></span></span>
+                  <span className={`album-art ${item.art}`}>
+                    {(item.coverImage || item.art === "road") && <Image src={item.coverImage || "/afterglow-cover.png"} alt={item.title} fill sizes="220px" />}
+                    <span
+                      className="hover-play"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (currentTrack.slug === item.slug) togglePlay();
+                        else playTrack(item);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Play ${item.title}`}
+                    >
+                      <Icon name={currentTrack.slug === item.slug && isPlaying ? "pause" : "play"} size={22} />
+                    </span>
+                  </span>
                   <strong>{item.title}</strong><small>{item.artist}</small>
                 </Link>
               ))}

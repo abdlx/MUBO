@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import GlassSurface from "./GlassSurface";
+import { usePlayer } from "../context/PlayerContext";
 import styles from "./BottomDock.module.css";
 
 type DockItem = "home" | "new" | "radio" | "library";
@@ -65,6 +68,8 @@ const items: Array<{ id: DockItem; label: string; target: string }> = [
 ];
 
 export default function BottomDock() {
+  const router = useRouter();
+  const { currentTrack, isPlaying, togglePlay, nextTrack } = usePlayer();
   const [active, setActive] = useState<DockItem>("home");
 
   function goTo(item: (typeof items)[number]) {
@@ -78,66 +83,162 @@ export default function BottomDock() {
     window.setTimeout(() => input?.focus({ preventScroll: true }), 380);
   }
 
-  return (
-    <nav className={styles.dock} aria-label="Primary navigation">
-      <GlassSurface
-        width="calc(83.9% - 10px)"
-        height="84.1%"
-        borderRadius="999px"
-        borderWidth={0.04}
-        brightness={50}
-        opacity={0.93}
-        blur={11}
-        displace={5}
-        backgroundOpacity={0}
-        saturation={0}
-        distortionScale={-180}
-        redOffset={0}
-        greenOffset={10}
-        blueOffset={20}
-        xChannel="R"
-        yChannel="G"
-        mixBlendMode="difference"
-        className={styles.pill}
-      >
-        {items.map((item) => (
-          <button
-            className={`${styles.item} ${active === item.id ? styles.active : ""}`}
-            key={item.id}
-            onClick={() => goTo(item)}
-            type="button"
-            aria-current={active === item.id ? "page" : undefined}
-          >
-            <span className={styles.itemIcon}><DockIcon name={item.id} /></span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </GlassSurface>
+  function openPlayer() {
+    router.push(`/player/${currentTrack.slug}`);
+  }
 
-      <GlassSurface
-        width="16.1%"
-        height="84.1%"
-        borderRadius="50%"
-        borderWidth={0.04}
-        brightness={50}
-        opacity={0.93}
-        blur={11}
-        displace={5}
-        backgroundOpacity={0}
-        saturation={0}
-        distortionScale={-180}
-        redOffset={0}
-        greenOffset={10}
-        blueOffset={20}
-        xChannel="R"
-        yChannel="G"
-        mixBlendMode="difference"
-        className={styles.searchSurface}
-      >
-        <button className={styles.search} type="button" onClick={openSearch} aria-label="Search">
-          <DockIcon name="search" />
-        </button>
-      </GlassSurface>
+  return (
+    <nav className={styles.dock} aria-label="Playback and navigation">
+      {/* Top Bar: Now Playing / Mini Player */}
+      <div className={styles.miniPlayerWrapper}>
+        <GlassSurface
+          width="100%"
+          height="100%"
+          borderRadius="999px"
+          borderWidth={0.04}
+          brightness={50}
+          opacity={0.93}
+          blur={11}
+          displace={5}
+          backgroundOpacity={0}
+          saturation={0}
+          distortionScale={-180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
+          xChannel="R"
+          yChannel="G"
+          mixBlendMode="difference"
+          className={styles.miniPlayerSurface}
+        >
+          <div
+            className={styles.miniTrackInfo}
+            onClick={openPlayer}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPlayer();
+              }
+            }}
+            aria-label={`Open player: ${currentTrack.title} by ${currentTrack.artist}`}
+          >
+            <div className={styles.miniCover}>
+              {currentTrack.coverImage && (
+                <Image
+                  src={currentTrack.coverImage}
+                  alt={currentTrack.title}
+                  fill
+                  sizes="48px"
+                />
+              )}
+            </div>
+            <div className={styles.miniCopy}>
+              <span className={styles.miniTitle}>{currentTrack.title}</span>
+              <span className={styles.miniArtist}>{currentTrack.artist}</span>
+            </div>
+          </div>
+
+          <div className={styles.miniControls}>
+            <button
+              className={styles.miniButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+              type="button"
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="6" y="5" width="4" height="14" rx="1.5" />
+                  <rect x="14" y="5" width="4" height="14" rx="1.5" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 5v14l12-7-12-7Z" />
+                </svg>
+              )}
+            </button>
+            <button
+              className={styles.miniButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                nextTrack();
+              }}
+              type="button"
+              aria-label="Next track"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m4.5 6 7 6-7 6V6Zm8 0 7 6-7 6V6Z" />
+              </svg>
+            </button>
+          </div>
+        </GlassSurface>
+      </div>
+
+      {/* Bottom Bar: Navigation and Search */}
+      <div className={styles.navRow}>
+        <GlassSurface
+          width="calc(100% - clamp(48px, 15.5cqw, 58px) - 8px)"
+          height="100%"
+          borderRadius="999px"
+          borderWidth={0.04}
+          brightness={50}
+          opacity={0.93}
+          blur={11}
+          displace={5}
+          backgroundOpacity={0}
+          saturation={0}
+          distortionScale={-180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
+          xChannel="R"
+          yChannel="G"
+          mixBlendMode="difference"
+          className={styles.pill}
+        >
+          {items.map((item) => (
+            <button
+              className={`${styles.item} ${active === item.id ? styles.active : ""}`}
+              key={item.id}
+              onClick={() => goTo(item)}
+              type="button"
+              aria-current={active === item.id ? "page" : undefined}
+            >
+              <span className={styles.itemIcon}><DockIcon name={item.id} /></span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </GlassSurface>
+
+        <GlassSurface
+          width="clamp(48px, 15.5cqw, 58px)"
+          height="100%"
+          borderRadius="50%"
+          borderWidth={0.04}
+          brightness={50}
+          opacity={0.93}
+          blur={11}
+          displace={5}
+          backgroundOpacity={0}
+          saturation={0}
+          distortionScale={-180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
+          xChannel="R"
+          yChannel="G"
+          mixBlendMode="difference"
+          className={styles.searchSurface}
+        >
+          <button className={styles.search} type="button" onClick={openSearch} aria-label="Search">
+            <DockIcon name="search" />
+          </button>
+        </GlassSurface>
+      </div>
     </nav>
   );
 }

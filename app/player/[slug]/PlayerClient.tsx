@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GlassSurface from "../../components/GlassSurface";
+import { usePlayer } from "../../context/PlayerContext";
 import { tracks, type Track } from "../../data/tracks";
 import styles from "./player.module.css";
 
@@ -34,25 +35,29 @@ const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Ma
 
 export default function PlayerClient({ track }: { track: Track }) {
   const router = useRouter();
-  const [playing, setPlaying] = useState(true);
+  const { isPlaying, togglePlay, playTrack } = usePlayer();
   const [progress, setProgress] = useState(Math.min(79, track.duration));
   const bgImage = track.coverImage || (track.art === "road" ? "/afterglow-cover.png" : null);
 
   useEffect(() => {
-    if (!playing) return;
+    playTrack(track);
+  }, [track, playTrack]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
     const timer = window.setInterval(() => {
       setProgress((current) => {
         if (current < track.duration) return current + 1;
-        setPlaying(false);
         return 0;
       });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [playing, track.duration]);
+  }, [isPlaying, track.duration]);
 
   function changeTrack(direction: number) {
     const currentIndex = tracks.findIndex((item) => item.slug === track.slug);
     const nextTrack = tracks[(currentIndex + direction + tracks.length) % tracks.length];
+    playTrack(nextTrack);
     router.push(`/player/${nextTrack.slug}`);
   }
 
@@ -91,7 +96,7 @@ export default function PlayerClient({ track }: { track: Track }) {
           </div>
           <div className={styles.mainControls}>
             <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
-            <button className={styles.playButton} onClick={() => setPlaying(!playing)} aria-label={playing ? "Pause" : "Resume"}><Icon name={playing ? "pause" : "play"} size={32} /></button>
+            <button className={styles.playButton} onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Resume"}><Icon name={isPlaying ? "pause" : "play"} size={32} /></button>
             <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
           </div>
         </section>
