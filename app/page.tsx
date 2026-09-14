@@ -94,7 +94,7 @@ export default function Home() {
             <div className="recent-grid">
               {filteredRecent.map((item) => (
                 <Link className="album-card" href={`/player/${item.slug}`} key={item.title} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
-                  <span className={`album-art ${item.art}`}>{item.art === "road" && <Image src="/afterglow-cover.png" alt="" fill sizes="220px" />}<span className="hover-play"><Icon name="play" size={22} /></span></span>
+                  <span className={`album-art ${item.art}`}>{(item.coverImage || item.art === "road") && <Image src={item.coverImage || "/afterglow-cover.png"} alt={item.title} fill sizes="220px" />}<span className="hover-play"><Icon name="play" size={22} /></span></span>
                   <strong>{item.title}</strong><small>{item.artist}</small>
                 </Link>
               ))}

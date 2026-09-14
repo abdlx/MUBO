@@ -22,9 +22,10 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
 }
 
 function CoverArt({ track, compact = false }: { track: Track; compact?: boolean }) {
+  const imageSrc = track.coverImage || (track.art === "road" ? "/afterglow-cover.png" : null);
   return (
     <div className={`${styles.coverArt} ${styles[track.art]} ${compact ? styles.compactCover : ""}`}>
-      {track.art === "road" && <Image src="/afterglow-cover.png" alt="" fill priority={!compact} sizes={compact ? "120px" : "(max-width: 600px) 84vw, 520px"} />}
+      {imageSrc && <Image src={imageSrc} alt={track.title} fill priority={!compact} sizes={compact ? "120px" : "(max-width: 600px) 84vw, 520px"} />}
     </div>
   );
 }
@@ -35,6 +36,7 @@ export default function PlayerClient({ track }: { track: Track }) {
   const router = useRouter();
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(Math.min(79, track.duration));
+  const bgImage = track.coverImage || (track.art === "road" ? "/afterglow-cover.png" : null);
 
   useEffect(() => {
     if (!playing) return;
@@ -56,7 +58,11 @@ export default function PlayerClient({ track }: { track: Track }) {
 
   return (
     <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
-      <Image className={styles.backgroundArt} src="/afterglow-cover.png" alt="" fill priority sizes="100vw" />
+      {bgImage ? (
+        <Image className={styles.backgroundArt} src={bgImage} alt="" fill priority sizes="100vw" />
+      ) : (
+        <div className={`${styles.backgroundArt} ${styles[track.art]}`} />
+      )}
       <div className={styles.backgroundWash} />
 
       <header className={styles.topbar}>
