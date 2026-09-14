@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { parseFile } from "music-metadata";
 import type { Track } from "../data/tracks";
 
 const AUDIO_EXTENSIONS = new Set([".mp3", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".wav", ".webm"]);
@@ -10,7 +11,12 @@ const COVER_NAMES = ["cover.jpg", "cover.jpeg", "cover.png", "cover.webp", "fold
 const ART_STYLES: Track["art"][] = ["road", "field", "electric", "ocean", "apricot"];
 const CACHE_MS = Math.max(1_000, Number(process.env.LIBRARY_SCAN_INTERVAL_MS) || 15_000);
 
-type LibraryEntry = Track & { absolutePath: string; coverPath: string | null };
+type LibraryEntry = Track & {
+  absolutePath: string;
+  coverPath: string | null;
+  embeddedCover: boolean;
+  trackNumber: number | null;
+};
 let cache: { root: string; expiresAt: number; entries: LibraryEntry[] } | null = null;
 
 function libraryRoot() {
@@ -20,6 +26,22 @@ function libraryRoot() {
 
 function safeName(value: string) {
   return value.replace(/^\d{1,3}[\s._-]+/, "").replace(/[._]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function cleanTag(value: string | undefined) {
+  return value?.replace(/\s+/g, " ").trim() || null;
+}
+
+async function mapConcurrent<T, R>(items: T[], limit: number, worker: (item: T, index: number) => Promise<R>) {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await worker(items[index], index);
+    }
+  }));
+  return results;
 }
 
 async function findCover(directory: string) {
@@ -54,7 +76,7 @@ export async function getLibrary(): Promise<{ root: string | null; entries: Libr
     await walk(root, files);
     files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
     const coverCache = new Map<string, string | null>();
-    const entries = await Promise.all(files.map(async (absolutePath) => {
+    const entries = await mapConcurrent(files, 6, async (absolutePath) => {
       const relativePath = path.relative(root, absolutePath);
       const id = createHash("sha256").update(relativePath).digest("hex").slice(0, 20);
       const directory = path.dirname(absolutePath);
@@ -64,22 +86,48 @@ export async function getLibrary(): Promise<{ root: string | null; entries: Libr
         coverCache.set(directory, coverPath);
       }
       const parts = relativePath.split(path.sep);
-      const album = parts.length > 1 ? safeName(parts.at(-2)!) : "Singles";
-      const artist = parts.length > 2 ? safeName(parts.at(-3)!) : "Unknown Artist";
+      const fallbackAlbum = parts.length > 1 ? safeName(parts.at(-2)!) : "Singles";
+      const fallbackArtist = parts.length > 2 ? safeName(parts.at(-3)!) : "Unknown Artist";
+      const fallbackTitle = safeName(path.basename(absolutePath, path.extname(absolutePath))) || "Untitled";
+      let title = fallbackTitle;
+      let artist = fallbackArtist;
+      let album = fallbackAlbum;
+      let duration: number | null = null;
+      let embeddedCover = false;
+      let trackNumber: number | null = null;
+      try {
+        const metadata = await parseFile(absolutePath, { duration: true });
+        title = cleanTag(metadata.common.title) ?? fallbackTitle;
+        artist = cleanTag(metadata.common.artist) ?? cleanTag(metadata.common.albumartist) ?? fallbackArtist;
+        album = cleanTag(metadata.common.album) ?? fallbackAlbum;
+        duration = Number.isFinite(metadata.format.duration) && metadata.format.duration! > 0 ? metadata.format.duration! : null;
+        embeddedCover = Boolean(metadata.common.picture?.length);
+        trackNumber = metadata.common.track.no;
+      } catch {
+        // A damaged or unusual file should not prevent the rest of the library loading.
+      }
       return {
         id,
         slug: id,
-        title: safeName(path.basename(absolutePath, path.extname(absolutePath))) || "Untitled",
+        title,
         artist,
         album,
-        duration: null,
+        duration,
         art: ART_STYLES[Number.parseInt(id.slice(0, 2), 16) % ART_STYLES.length],
-        coverImage: coverPath ? `/api/tracks/${id}/cover` : null,
+        coverImage: coverPath || embeddedCover ? `/api/tracks/${id}/cover` : null,
         streamUrl: `/api/tracks/${id}/stream`,
         absolutePath,
         coverPath: coverPath ?? null,
+        embeddedCover,
+        trackNumber,
       } satisfies LibraryEntry;
-    }));
+    });
+    entries.sort((a, b) =>
+      a.artist.localeCompare(b.artist, undefined, { sensitivity: "base" }) ||
+      a.album.localeCompare(b.album, undefined, { sensitivity: "base" }) ||
+      (a.trackNumber ?? Number.MAX_SAFE_INTEGER) - (b.trackNumber ?? Number.MAX_SAFE_INTEGER) ||
+      a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" }),
+    );
     cache = { root, entries, expiresAt: Date.now() + CACHE_MS };
     return { root, entries };
   } catch (error) {

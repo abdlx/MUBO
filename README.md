@@ -22,7 +22,7 @@ The music directory is mounted read-only. Mubo never changes or deletes your fil
 
 ## Music folder layout
 
-Mubo recursively scans MP3, M4A, AAC, FLAC, OGG, Opus, WAV, and WebM audio. For useful artist and album names, arrange files like this:
+Mubo recursively scans MP3, M4A, AAC, FLAC, OGG, Opus, WAV, and WebM audio. It reads embedded title, artist, album, track number, duration, and cover-art tags. When tags are missing, it falls back to this folder layout:
 
 ```text
 /srv/music/
@@ -33,7 +33,7 @@ Mubo recursively scans MP3, M4A, AAC, FLAC, OGG, Opus, WAV, and WebM audio. For 
       cover.jpg
 ```
 
-The filename becomes the song title, the containing directory becomes the album, and its parent becomes the artist. Numeric track prefixes are removed. Add `cover.jpg`, `cover.jpeg`, `cover.png`, `cover.webp`, `folder.jpg`, `folder.png`, `album.jpg`, or `album.png` beside the songs for album art.
+When tags are missing, the filename becomes the song title, the containing directory becomes the album, and its parent becomes the artist. Numeric track prefixes are removed. Embedded artwork is preferred; you can also add `cover.jpg`, `cover.jpeg`, `cover.png`, `cover.webp`, `folder.jpg`, `folder.png`, `album.jpg`, or `album.png` beside the songs as a fallback.
 
 ## Docker CLI alternative
 
