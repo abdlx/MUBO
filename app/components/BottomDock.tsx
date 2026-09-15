@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import GlassSurface from "./GlassSurface";
+import DesktopTransport from "./DesktopTransport";
 import { usePlayer } from "../context/PlayerContext";
 import styles from "./BottomDock.module.css";
 
@@ -235,6 +236,7 @@ export default function BottomDock() {
           </button>
         </GlassSurface>
       </div>
+      <DesktopTransport />
     </nav>
   );
 }

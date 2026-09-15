@@ -281,3 +281,15 @@
     transition: none;
   }
 }
+
+@media (min-width:1024px) {
+  .dock { bottom: 0; left: 0; transform: none; width: 100%; height: 86px; padding: 10px 22px; flex-direction: row; align-items: center; gap: 24px; background: rgba(13,13,13,.96); border-top: 1px solid rgba(255,255,255,.12); }
+  .miniPlayerWrapper { flex: 0 0 min(27vw,330px); height: 58px; }
+  .miniPlayerSurface { border-radius: 13px !important; }
+  .miniPlayerSurface > :global(.glass-surface-content) { padding: 0 12px !important; }
+  .navRow { display: none; }
+  .miniTrackInfo { gap: 10px; }
+  .miniCover { width: 44px; height: 44px; flex-basis: 44px; }
+  .miniTitle { font-size: 13px; }
+  .miniArtist { font-size: 11px; }
+}

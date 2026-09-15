@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
-import BottomDock from "./components/BottomDock";
 import { getSkySlotForDate } from "./components/SkyBackground";
 import { getAlbums, getArtists } from "./data/library";
 
@@ -162,7 +161,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-      <BottomDock />
     </main>
   );
 }

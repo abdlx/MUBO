@@ -47,7 +47,7 @@
 .message a { color: white; }
 
 @media (max-width:600px) {
-  .content { padding-bottom: 54px; }
+  .content { padding-bottom: 155px; }
   .topbar { margin-bottom: 25px; }
   .hero { align-items: center; gap: 22px; grid-template-columns: minmax(112px,38vw) minmax(0,1fr); }
   .cover { border-radius: 18px; }
@@ -59,4 +59,13 @@
   .trackRow { gap: 8px; grid-template-columns: minmax(0,1fr) 40px; }
   .rowAlbum { display: none; }
   .duration { font-size: 12px; padding-right: 5px; }
+}
+@media (min-width:1024px) {
+  .content { max-width: 1380px; padding: 40px clamp(35px,4vw,64px) 145px; }
+  .topbar { margin-bottom: 55px; }
+  .hero { grid-template-columns: minmax(240px,330px) minmax(0,1fr); gap: 60px; }
+  .heroCopy h1 { font-size: clamp(55px,5vw,86px); }
+  .section { margin-top: 62px; }
+  .albumGrid { margin-right: 0; padding-right: 0; }
+  .trackRow { grid-template-columns: minmax(0,1fr) minmax(150px,28%) 56px; }
 }

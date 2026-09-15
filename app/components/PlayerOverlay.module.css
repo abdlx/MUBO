@@ -2,3 +2,4 @@
 @media(max-width:600px){.page{padding:16px 22px 35px}.art{width:min(80vw,42dvh);margin:clamp(20px,4vh,36px) auto}.queue{max-height:180px;overflow:auto}}
 @media(prefers-reduced-motion:reduce){.layer{transition:none}}
 .queueHead a,.buttons button:not(.play),.header button,.header a{border-radius:999px}.buttons button:not(.play):hover,.header button:hover,.header a:hover{background:rgba(255,255,255,.08);box-shadow:inset 0 1px rgba(255,255,255,.22)}
+@media(min-width:1024px){.page{max-width:1180px;min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:0 clamp(45px,6vw,100px);padding:30px 55px 40px}.header{grid-column:1/-1;align-self:start}.art{grid-column:1;grid-row:2;align-self:center;width:min(100%,42vw,520px);margin:0 auto}.controls{grid-column:2;grid-row:2;align-self:center;max-width:510px}.trackHeading h1{font-size:clamp(30px,3vw,44px)}.queue{max-height:190px;overflow:auto}}

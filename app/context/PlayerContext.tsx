@@ -15,6 +15,8 @@ interface PlayerContextType {
   nextTrack: () => void;
   prevTrack: () => void;
   seek: (seconds: number) => void;
+  volume: number;
+  setVolume: (value: number) => void;
   queue: Track[];
   shuffleMode: "off" | "standard" | "smart";
   repeatMode: "off" | "all" | "one";
@@ -31,6 +33,7 @@ const TimingContext = createContext<{ currentTime: number; duration: number } | 
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const volumeRef = useRef(0.8);
   const tracksRef = useRef<Track[]>([]);
   const currentRef = useRef<Track | null>(null);
   const queueRef = useRef<Track[]>([]);
@@ -45,12 +48,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [musicPathConfigured, setMusicPathConfigured] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, updateVolume] = useState(0.8);
   const [queue, setQueue] = useState<Track[]>([]);
   const [shuffleMode, updateShuffleMode] = useState<"off" | "standard" | "smart">("off");
   const [repeatMode, updateRepeatMode] = useState<"off" | "all" | "one">("off");
   const [playerOpen, setPlayerOpen] = useState(false);
   const openPlayer = useCallback(() => setPlayerOpen(true), []);
   const closePlayer = useCallback(() => setPlayerOpen(false), []);
+  const setVolume = useCallback((value: number) => {
+    const next = Math.min(1, Math.max(0, value));
+    volumeRef.current = next;
+    if (audioRef.current) audioRef.current.volume = next;
+    updateVolume(next);
+  }, []);
 
   const setShuffleMode = useCallback((mode: "off" | "standard" | "smart") => {
     shuffleRef.current = mode;
@@ -125,6 +135,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
+    audio.volume = volumeRef.current;
     audioRef.current = audio;
     const onTime = () => setCurrentTime(audio.currentTime || 0);
     const onDuration = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
@@ -188,10 +199,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playerValue = useMemo<PlayerContextType>(() => ({
     tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured,
     playTrack: selectTrack, togglePlay,
-    nextTrack, prevTrack, seek,
+    nextTrack, prevTrack, seek, volume, setVolume,
     queue, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue,
     playerOpen, openPlayer, closePlayer,
-  }), [tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, selectTrack, togglePlay, nextTrack, prevTrack, seek, queue, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, playerOpen, openPlayer, closePlayer]);
+  }), [tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, selectTrack, togglePlay, nextTrack, prevTrack, seek, volume, setVolume, queue, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, playerOpen, openPlayer, closePlayer]);
   const timingValue = useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
   return <PlayerContext.Provider value={playerValue}><TimingContext.Provider value={timingValue}>{children}</TimingContext.Provider></PlayerContext.Provider>;
 }

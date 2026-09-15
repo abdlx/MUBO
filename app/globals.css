@@ -2,7 +2,7 @@
 
 :root { --background: #050505; --surface: rgba(255,255,255,.07); --text: #f6f7f8; --muted: rgba(230,234,240,.62); --line: rgba(255,255,255,.12); }
 * { box-sizing: border-box; }
-html { background: var(--background); scroll-behavior: smooth; }
+html { background: var(--background); }
 html, body { margin: 0; min-height: 100%; }
 body { background: linear-gradient(180deg,#111318 0%,#090909 16%,#050505 45%); color: var(--text); font-family: var(--font-geist-sans), Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 button, input { font: inherit; }
@@ -104,6 +104,31 @@ button { color: inherit; }
 .artist-avatar.dusk { background: linear-gradient(145deg,#203a5c,#7b5a58); }
 .artist-card > strong { display: block; font-size: 14px; margin-top: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 button:focus-visible,input:focus-visible { outline: 2px solid rgba(255,255,255,.8); outline-offset: 3px; }
+.app-frame { width: 100%; min-height: 100dvh; }
+
+@media (min-width:1024px) {
+  .app-frame:not(.player-route) > main { margin-left: 232px; min-width: 0; }
+  .home-content { max-width: 1460px; padding: 44px clamp(30px,4vw,64px) 148px; }
+  .home-header h1 { font-size: clamp(42px,4vw,64px); }
+  .search-field { max-width: 700px; margin-top: 30px; min-height: 58px; }
+  .search-field input { font-size: 17px; }
+  .category-row { margin: 20px 0 30px; }
+  .category-row button { font-size: 14px; min-width: auto; padding: 10px 20px; }
+  .hero-card { min-height: clamp(320px,30vw,440px); }
+  .hero-copy h2 { font-size: clamp(42px,4vw,62px); }
+  .home-section { margin-top: 44px; }
+  .recent-grid,.mix-grid,.artist-row { display: grid; overflow: visible; margin: 0; padding: 0; gap: 20px; }
+  .recent-grid { grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); }
+  .mix-grid { grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); }
+  .artist-row { grid-template-columns: repeat(auto-fill,minmax(128px,1fr)); }
+  .album-card,.mix-card,.artist-card { flex: initial; width: 100%; }
+  .album-card > strong { font-size: 15px; }
+  .album-card > small { font-size: 13px; }
+  .mix-card { min-height: 190px; }
+  .artist-card { max-width: 170px; }
+  .artist-card > strong { text-align: center; font-size: 13px; }
+  #albums .album-card:nth-child(n+9),#your-library .artist-card:nth-child(n+9) { display: none; }
+}
 
 @media (max-width:560px) {
   .home-content { padding-bottom: 160px; }
