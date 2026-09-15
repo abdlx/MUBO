@@ -88,7 +88,6 @@ export default function BottomDock() {
       {/* Top Bar: Now Playing / Mini Player */}
       {currentTrack && <div className={styles.miniPlayerWrapper}>
         <GlassSurface
-          lightweight
           width="100%"
           height="100%"
           borderRadius="999px"
@@ -178,7 +177,6 @@ export default function BottomDock() {
       {/* Bottom Bar: Navigation and Search */}
       <div className={styles.navRow}>
         <GlassSurface
-          lightweight
           width="calc(100% - clamp(48px, 15.5cqw, 58px) - 8px)"
           height="100%"
           borderRadius="999px"
@@ -213,7 +211,6 @@ export default function BottomDock() {
         </GlassSurface>
 
         <GlassSurface
-          lightweight
           width="clamp(48px, 15.5cqw, 58px)"
           height="100%"
           borderRadius="50%"
