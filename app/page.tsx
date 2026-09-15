@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
 import BottomDock from "./components/BottomDock";
-import SkyBackground, { getSkySlotForDate } from "./components/SkyBackground";
+import { getSkySlotForDate } from "./components/SkyBackground";
 import { getAlbums, getArtists } from "./data/library";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
@@ -36,7 +36,7 @@ export default function Home() {
   const { tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, playTrack, togglePlay, openPlayer } = usePlayer();
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
-  const [greeting, setGreeting] = useState(() => getSkySlotForDate().greeting);
+  const greeting = getSkySlotForDate().greeting;
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -75,8 +75,6 @@ export default function Home() {
 
   return (
     <main className="home-shell" id="top">
-      <SkyBackground onSlotChange={(slot) => setGreeting(slot.greeting)} />
-      <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <div className="home-content">
         <header className="home-header">
           <div><p className="eyebrow">{greeting}</p><h1>Let&apos;s listen</h1></div>
@@ -103,7 +101,6 @@ export default function Home() {
               {currentTrack?.slug === featured.slug && isPlaying ? "Pause" : "Play"}
             </button>
           </div>
-          <div className="hero-dots" aria-hidden="true"><i /><i /><i /></div>
         </section>}
 
         <section className="home-section" id="recently-played">
@@ -154,7 +151,7 @@ export default function Home() {
         {tracks.length > 0 && <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Quick Picks</h2><Link href="/browse/playlists">View all<Icon name="arrow" size={18} /></Link></div>
           <div className="mix-grid" data-scroll-restore="home-picks">
-            {mixes.slice(0, tracks.length).map((mix, index) => <button className={`mix-card ${mix.art}`} key={tracks[index].id} onClick={() => playTrack(tracks[index])}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{tracks[index].title}</strong><small>{tracks[index].artist} · {tracks[index].album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
+            {mixes.slice(0, tracks.length).map((mix, index) => <button className={`mix-card ${mix.art}`} key={tracks[index].id} onClick={() => playTrack(tracks[index])}>{tracks[index].coverImage && <Image className="mix-artwork" src={tracks[index].coverImage} alt="" fill sizes="203px" />}<span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{tracks[index].title}</strong><small>{tracks[index].artist} · {tracks[index].album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>}
 

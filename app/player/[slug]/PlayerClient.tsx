@@ -49,7 +49,6 @@ export default function PlayerClient({ slug }: { slug: string }) {
   }
 
   return <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
-    {track.coverImage ? <Image className={styles.backgroundArt} src={track.coverImage} alt="" fill priority sizes="100vw" /> : <div className={`${styles.backgroundArt} ${styles[track.art]}`} />}
     <div className={styles.backgroundWash} />
     <header className={styles.topbar}>
       <BackButton className={styles.iconButton} ariaLabel="Go back"><Icon name="back" /></BackButton>
@@ -57,7 +56,7 @@ export default function PlayerClient({ slug }: { slug: string }) {
       <button className={styles.iconButton} aria-label="More options"><Icon name="more" /></button>
     </header>
     <section className={styles.artworkWrap} aria-label={`${track.title} album artwork`}><div className={styles.artworkGlow} /><CoverArt track={track} /><div className={styles.artworkShine} /></section>
-    <GlassSurface width="min(100%, 680px)" height="auto" borderRadius="var(--control-card-radius)" borderWidth={0.07} brightness={50} opacity={0.93} blur={11} displace={0} backgroundOpacity={0} saturation={1} distortionScale={-180} redOffset={0} greenOffset={10} blueOffset={20} xChannel="R" yChannel="G" mixBlendMode="difference" className={styles.glassPlayer} style={{ aspectRatio: "1.9" }}>
+    <GlassSurface width="min(100%, 680px)" height="auto" borderRadius="var(--control-card-radius)" borderWidth={0.07} brightness={100} opacity={0.08} blur={11} displace={0} backgroundOpacity={0.08} saturation={1} distortionScale={-180} redOffset={0} greenOffset={10} blueOffset={20} xChannel="R" yChannel="G" mixBlendMode="difference" className={styles.glassPlayer} style={{ aspectRatio: "1.9" }}>
       <section className={styles.glassPlayerContent} aria-label="Music controls">
         <div className={styles.cardHeading}><CoverArt track={track} compact /><div className={styles.cardCopy}><h1>{track.title}</h1><p>{track.artist}</p></div><div className={styles.waveform} aria-hidden="true">{[3.45,2.55,2.95,2.2,2.4,1.7,1.25].map((height,index) => <i key={index} style={{ height: `${height}cqw` }} />)}</div></div>
         <div className={styles.progressRow}>

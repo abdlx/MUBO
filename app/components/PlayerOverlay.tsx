@@ -27,7 +27,7 @@ export default function PlayerOverlay() {
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; previous?.focus(); };
   }, [playerOpen, closePlayer]);
   return <div className={`${styles.layer} ${playerOpen && currentTrack ? styles.open : ""}`} aria-hidden={!playerOpen}>
-    {currentTrack && <><div className={styles.backdrop}>{currentTrack.coverImage && <Image src={currentTrack.coverImage} alt="" fill sizes="100vw" />}</div><div className={styles.wash} />
+    {currentTrack && <><div className={styles.backdrop} /><div className={styles.wash} />
       <div className={styles.page} role="dialog" aria-modal="true" aria-label="Now playing">
         <header className={styles.header}><button ref={closeRef} onClick={closePlayer} aria-label="Collapse player">⌄</button><div><span>NOW PLAYING FROM YOUR LIBRARY</span><strong>{currentTrack.album}</strong></div><Link href={`/album/${currentTrack.albumId}`} onClick={closePlayer} aria-label="Open album">↗</Link></header>
         <div className={styles.art}>{currentTrack.coverImage && <Image src={currentTrack.coverImage} alt={`${currentTrack.album} cover`} fill sizes="(max-width: 600px) 80vw, 440px" />}</div>

@@ -25,7 +25,7 @@
 
 .miniPlayerSurface {
   box-shadow:
-    0 0 1px 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 1px 1px rgba(255, 255, 255, 0.12) inset,
     0 0 6px 1px rgba(255, 255, 255, 0.05) inset,
     0 8px 24px rgba(0, 0, 0, 0.3) !important;
   cursor: pointer;
@@ -149,7 +149,7 @@
 
 .pill {
   box-shadow:
-    0 0 1px 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 1px 1px rgba(255, 255, 255, 0.12) inset,
     0 0 6px 1px rgba(255, 255, 255, 0.05) inset,
     0 8px 24px rgba(0, 0, 0, 0.3) !important;
   flex: 1 1 auto;
@@ -207,7 +207,7 @@
 }
 
 .item.active {
-  color: #e30b14;
+  color: #fff;
   transform: none !important;
 }
 
@@ -231,7 +231,7 @@
 .searchSurface {
   aspect-ratio: 1 / 1;
   box-shadow:
-    0 0 1px 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 1px 1px rgba(255, 255, 255, 0.12) inset,
     0 0 6px 1px rgba(255, 255, 255, 0.05) inset,
     0 8px 24px rgba(0, 0, 0, 0.3) !important;
   flex: 0 0 auto;

@@ -225,17 +225,16 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
 
     if (lightweight) return {
       ...baseStyles,
-      background: "linear-gradient(145deg, rgba(255,255,255,.23), rgba(255,255,255,.08) 45%, rgba(9,13,23,.24))",
-      border: "1px solid rgba(255,255,255,.24)",
-      boxShadow: "inset 0 1px rgba(255,255,255,.25), inset 0 -1px rgba(255,255,255,.06), 0 8px 24px rgba(0,0,0,.22)",
+      background: "rgba(255,255,255,.08)",
+      backdropFilter: "blur(10px)",
+      border: "1px solid rgba(255,255,255,.12)",
+      boxShadow: "inset 0 1px rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.22)",
     };
 
     if (svgSupported) {
       return {
         ...baseStyles,
-        background: isDarkMode
-          ? `hsl(0 0% 0% / ${backgroundOpacity})`
-          : `hsl(0 0% 100% / ${backgroundOpacity})`,
+        background: `rgba(255,255,255,${backgroundOpacity})`,
         backdropFilter: `url(#${filterId}) saturate(${saturation})`,
         boxShadow: isDarkMode
           ? `0 0 2px 1px color-mix(in oklch, white, transparent 65%) inset,
@@ -255,32 +254,32 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
       return backdropFilterSupported
         ? {
             ...baseStyles,
-            background: "rgba(255, 255, 255, 0.1)",
-            backdropFilter: "blur(12px) saturate(1.8) brightness(1.2)",
-            WebkitBackdropFilter: "blur(12px) saturate(1.8) brightness(1.2)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            boxShadow: "inset 0 1px rgba(255,255,255,.2), inset 0 -1px rgba(255,255,255,.1)",
+            background: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(10px) saturate(1)",
+            WebkitBackdropFilter: "blur(10px) saturate(1)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: "inset 0 1px rgba(255,255,255,.08), inset 0 -1px rgba(255,255,255,.04)",
           }
         : {
             ...baseStyles,
-            background: "rgba(0, 0, 0, 0.4)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
+            background: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
           };
     }
 
     return backdropFilterSupported
       ? {
           ...baseStyles,
-          background: "rgba(255, 255, 255, 0.25)",
-          backdropFilter: "blur(12px) saturate(1.8) brightness(1.1)",
-          WebkitBackdropFilter: "blur(12px) saturate(1.8) brightness(1.1)",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
-          boxShadow: "0 8px 32px rgba(31,38,135,.2), inset 0 1px rgba(255,255,255,.4)",
+          background: "rgba(255, 255, 255, 0.08)",
+          backdropFilter: "blur(10px) saturate(1)",
+          WebkitBackdropFilter: "blur(10px) saturate(1)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          boxShadow: "0 8px 32px rgba(0,0,0,.2), inset 0 1px rgba(255,255,255,.08)",
         }
       : {
           ...baseStyles,
-          background: "rgba(255, 255, 255, 0.4)",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
+          background: "rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
         };
   };
 

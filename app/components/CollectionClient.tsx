@@ -49,7 +49,6 @@ export default function CollectionClient({ kind, id }: { kind: CollectionKind; i
   }
 
   return <main className={styles.shell}>
-    {representative.coverImage && <Image className={styles.backdrop} src={representative.coverImage} alt="" fill priority sizes="100vw" />}
     <div className={styles.wash} />
     <div className={styles.content}>
       <header className={styles.topbar}><BackButton ariaLabel="Go back"><span>‹</span></BackButton><strong>Mubo</strong><i /></header>

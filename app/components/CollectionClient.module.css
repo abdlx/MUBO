@@ -1,6 +1,5 @@
-.shell { background: #070a0e; color: white; min-height: 100svh; overflow: hidden; position: relative; isolation: isolate; }
-.backdrop { filter: blur(55px) saturate(1.2); object-fit: cover; opacity: .28; transform: scale(1.2); z-index: -3; }
-.wash { background: linear-gradient(180deg,rgba(5,8,12,.34),#070a0e 48%); inset: 0; position: absolute; z-index: -2; }
+.shell { background: #050505; color: white; min-height: 100svh; overflow: hidden; position: relative; isolation: isolate; }
+.wash { background: linear-gradient(180deg,#111318 0%,#090909 18%,#050505 52%); inset: 0; position: absolute; z-index: -2; }
 .content { margin: 0 auto; max-width: 920px; padding: max(22px,env(safe-area-inset-top)) clamp(18px,5vw,48px) 90px; }
 .topbar { align-items: center; display: grid; grid-template-columns: 44px 1fr 44px; margin-bottom: clamp(30px,7vh,72px); }
 .topbar button { background:none; border:0; color: white; cursor:pointer; display: grid; font-size: 38px; height: 44px; place-items: center; width: 44px; }
@@ -30,8 +29,8 @@
 .albumCard > strong,.albumCard > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .albumCard > strong { font-size: 15px; margin-top: 11px; }
 .albumCard > span { color: rgba(255,255,255,.53); font-size: 13px; margin-top: 4px; }
-.trackList { border-top: 1px solid rgba(255,255,255,.09); }
-.trackRow { align-items: center; border-bottom: 1px solid rgba(255,255,255,.07); display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) minmax(90px,25%) 46px; min-height: 68px; transition: background .2s; }
+.trackList { border-top: 1px solid rgba(255,255,255,.12); }
+.trackRow { align-items: center; border-bottom: 1px solid rgba(255,255,255,.12); display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) minmax(90px,25%) 46px; min-height: 68px; transition: background .2s; }
 .trackRow:hover,.activeTrack { background: rgba(255,255,255,.045); }
 .trackMain { align-items: center; background: none; border: 0; cursor: pointer; display: grid; gap: 14px; grid-template-columns: 28px minmax(0,1fr); min-width: 0; padding: 10px 8px; text-align: left; }
 .trackNumber { color: rgba(255,255,255,.5); display: grid; font-variant-numeric: tabular-nums; place-items: center; }
