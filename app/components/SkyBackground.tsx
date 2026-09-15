@@ -127,24 +127,7 @@ export default function SkyBackground({ onSlotChange }: SkyBackgroundProps) {
 
   return (
     <div className={styles.skyContainer} aria-hidden="true">
-      {SKY_SLOTS.map((slot) => {
-        const isActive = slot.id === activeSlotId;
-        return (
-          <div
-            key={slot.id}
-            className={`${styles.skyLayer} ${isActive ? styles.activeLayer : styles.inactiveLayer}`}
-          >
-            <Image
-              src={slot.file}
-              alt=""
-              fill
-              priority={isActive}
-              sizes="100vw"
-              className={styles.skyImage}
-            />
-          </div>
-        );
-      })}
+      <Image src={SKY_SLOTS.find(slot => slot.id === activeSlotId)?.file ?? SKY_SLOTS[0].file} alt="" fill priority sizes="100vw" className={styles.skyImage} />
       {/* Cinematic dark scrim overlay to ensure UI elements and glass cards remain high-contrast and legible */}
       <div className={styles.skyScrim} />
     </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { PlayerProvider } from "./context/PlayerContext";
 import PlayerOverlay from "./components/PlayerOverlay";
+import ScrollRestoration from "./components/ScrollRestoration";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <PlayerProvider>{children}<PlayerOverlay /></PlayerProvider>
+        <PlayerProvider>{children}<PlayerOverlay /><ScrollRestoration /></PlayerProvider>
       </body>
     </html>
   );

@@ -48,6 +48,7 @@ export interface GlassSurfaceProps {
     | "plus-lighter";
   className?: string;
   style?: React.CSSProperties;
+  lightweight?: boolean;
 }
 
 const darkModeQuery = "(prefers-color-scheme: dark)";
@@ -103,6 +104,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   mixBlendMode = "difference",
   className = "",
   style = {},
+  lightweight = false,
 }) => {
   const uniqueId = useId().replace(/:/g, "-");
   const filterId = `glass-filter-${uniqueId}`;
@@ -155,6 +157,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   }, [generateDisplacementMap]);
 
   useEffect(() => {
+    if (lightweight) return;
     updateDisplacementMap();
     [
       { ref: redChannelRef, offset: redOffset },
@@ -183,28 +186,32 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     yChannel,
     mixBlendMode,
     updateDisplacementMap,
+    lightweight,
   ]);
 
   useEffect(() => {
+    if (lightweight) return;
     const frame = window.requestAnimationFrame(() => {
       setSvgSupported(supportsSVGFilters(filterId));
       setBackdropFilterSupported(supportsBackdropFilter());
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [filterId]);
+  }, [filterId, lightweight]);
 
   useEffect(() => {
+    if (lightweight) return;
     if (!containerRef.current) return;
     const resizeObserver = new ResizeObserver(() => {
       window.setTimeout(updateDisplacementMap, 0);
     });
     resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
-  }, [updateDisplacementMap]);
+  }, [updateDisplacementMap, lightweight]);
 
   useEffect(() => {
+    if (lightweight) return;
     window.setTimeout(updateDisplacementMap, 0);
-  }, [width, height, updateDisplacementMap]);
+  }, [width, height, updateDisplacementMap, lightweight]);
 
   const getContainerStyles = (): React.CSSProperties => {
     const baseStyles = {
@@ -215,6 +222,13 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
       "--glass-frost": backgroundOpacity,
       "--glass-saturation": saturation,
     } as React.CSSProperties;
+
+    if (lightweight) return {
+      ...baseStyles,
+      background: "linear-gradient(145deg, rgba(255,255,255,.23), rgba(255,255,255,.08) 45%, rgba(9,13,23,.24))",
+      border: "1px solid rgba(255,255,255,.24)",
+      boxShadow: "inset 0 1px rgba(255,255,255,.25), inset 0 -1px rgba(255,255,255,.06), 0 8px 24px rgba(0,0,0,.22)",
+    };
 
     if (svgSupported) {
       return {
@@ -280,7 +294,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
       className={`relative flex items-center justify-center overflow-hidden transition-opacity duration-[260ms] ease-out ${focusVisibleClasses} ${className}`}
       style={getContainerStyles()}
     >
-      <svg
+      {!lightweight && <svg
         className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-0"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -298,7 +312,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
             <feGaussianBlur ref={gaussianBlurRef} in="output" stdDeviation="0.7" />
           </filter>
         </defs>
-      </svg>
+      </svg>}
       <div className="glass-surface-content relative z-10 flex h-full w-full items-center justify-center rounded-[inherit] p-2">
         {children}
       </div>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
 import BottomDock from "./components/BottomDock";
 import SkyBackground, { getSkySlotForDate } from "./components/SkyBackground";
@@ -38,6 +38,22 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [greeting, setGreeting] = useState(() => getSkySlotForDate().greeting);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const params = new URLSearchParams(window.location.search);
+      setQuery(params.get("q") ?? "");
+      setActiveCategory(params.get("category") ?? "All");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  function rememberHome(nextQuery: string, nextCategory: string) {
+    const params = new URLSearchParams();
+    if (nextQuery) params.set("q", nextQuery);
+    if (nextCategory !== "All") params.set("category", nextCategory);
+    window.history.replaceState(window.history.state, "", `/${params.size ? `?${params}` : ""}`);
+  }
+
   const filteredRecent = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const result = tracks.filter((item) => {
@@ -53,6 +69,7 @@ export default function Home() {
 
   function chooseCategory(category: string) {
     setActiveCategory(category);
+    rememberHome(query, category);
     router.push(`/browse/${category.toLowerCase()}`);
   }
 
@@ -68,8 +85,8 @@ export default function Home() {
 
         <label className="search-field">
           <Icon name="search" size={28} />
-          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/browse/all?q=${encodeURIComponent(query)}`); }} placeholder="Search for songs, artists, or albums" aria-label="Search for songs, artists, or albums" />
-          {query && <button type="button" onClick={() => setQuery("")} aria-label="Clear search">Clear</button>}
+          <input type="search" value={query} onChange={(event) => { setQuery(event.target.value); rememberHome(event.target.value, activeCategory); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/browse/all?q=${encodeURIComponent(query)}`); }} placeholder="Search for songs, artists, or albums" aria-label="Search for songs, artists, or albums" />
+          {query && <button type="button" onClick={() => { setQuery(""); rememberHome("", activeCategory); }} aria-label="Clear search">Clear</button>}
         </label>
 
         <div className="category-row" aria-label="Browse categories">
@@ -95,7 +112,7 @@ export default function Home() {
             <Link href="/browse/songs">View all<Icon name="arrow" size={18} /></Link>
           </div>
           {filteredRecent.length ? (
-            <div className="recent-grid">
+            <div className="recent-grid" data-scroll-restore="home-songs">
               {filteredRecent.map((item) => (
                 <Link className="album-card" href={`/player/${item.slug}`} onClick={(event) => { event.preventDefault(); if (currentTrack?.id !== item.id) playTrack(item); openPlayer(); }} key={item.title} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
                   <span className={`album-art ${item.art}`}>
@@ -120,13 +137,13 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="empty-state"><Icon name="sparkle" size={24} /><p>{isLoading ? "Scanning your music library…" : !musicPathConfigured ? "Set MUSIC_PATH to your music folder, then restart Mubo." : libraryError ? `Library error: ${libraryError}` : tracks.length === 0 ? "No supported audio files were found in your music folder." : "No matches yet. Try another song or artist."}</p>{tracks.length > 0 && <button onClick={() => { setQuery(""); setActiveCategory("All"); }}>Reset filters</button>}</div>
+            <div className="empty-state"><Icon name="sparkle" size={24} /><p>{isLoading ? "Scanning your music library…" : !musicPathConfigured ? "Set MUSIC_PATH to your music folder, then restart Mubo." : libraryError ? `Library error: ${libraryError}` : tracks.length === 0 ? "No supported audio files were found in your music folder." : "No matches yet. Try another song or artist."}</p>{tracks.length > 0 && <button onClick={() => { setQuery(""); setActiveCategory("All"); rememberHome("", "All"); }}>Reset filters</button>}</div>
           )}
         </section>
 
         {albums.length > 0 && <section className="home-section" id="albums">
           <div className="section-heading"><h2>Your Albums</h2><Link href="/browse/albums">View all<Icon name="arrow" size={18} /></Link></div>
-          <div className="recent-grid">
+          <div className="recent-grid" data-scroll-restore="home-albums">
             {albums.map((album) => <Link className="album-card" href={`/album/${album.id}`} key={album.id} aria-label={`Open ${album.title} by ${album.artist}`}>
               <span className={`album-art ${album.art}`}>{album.coverImage && <Image src={album.coverImage} alt="" fill sizes="220px" />}</span>
               <strong>{album.title}</strong><small>{album.artist}{album.year ? ` · ${album.year}` : ""}</small>
@@ -136,14 +153,14 @@ export default function Home() {
 
         {tracks.length > 0 && <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Quick Picks</h2><Link href="/browse/playlists">View all<Icon name="arrow" size={18} /></Link></div>
-          <div className="mix-grid">
+          <div className="mix-grid" data-scroll-restore="home-picks">
             {mixes.slice(0, tracks.length).map((mix, index) => <button className={`mix-card ${mix.art}`} key={tracks[index].id} onClick={() => playTrack(tracks[index])}><span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{tracks[index].title}</strong><small>{tracks[index].artist} · {tracks[index].album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>}
 
         <section className="home-section artists-section" id="your-library">
           <div className="section-heading"><h2>Your Artists</h2><Link href="/browse/artists">View all<Icon name="arrow" size={18} /></Link></div>
-          <div className="artist-row">
+          <div className="artist-row" data-scroll-restore="home-artists">
             {artists.map((artist) => <Link className="artist-card" href={`/artist/${artist.id}`} key={artist.id}><span className={`artist-avatar ${artist.art} ${artist.coverImage ? "has-image" : ""}`}>{artist.coverImage ? <Image src={artist.coverImage} alt="" fill sizes="150px" /> : <i>{artist.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</i>}</span><strong>{artist.name}</strong></Link>)}
           </div>
         </section>

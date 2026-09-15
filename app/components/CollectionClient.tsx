@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import BackButton from "./BackButton";
 import { useMemo } from "react";
 import { usePlayer } from "../context/PlayerContext";
 import { getAlbums } from "../data/library";
@@ -51,7 +52,7 @@ export default function CollectionClient({ kind, id }: { kind: CollectionKind; i
     {representative.coverImage && <Image className={styles.backdrop} src={representative.coverImage} alt="" fill priority sizes="100vw" />}
     <div className={styles.wash} />
     <div className={styles.content}>
-      <header className={styles.topbar}><Link href="/" aria-label="Back to home"><span>‹</span></Link><strong>Mubo</strong><i /></header>
+      <header className={styles.topbar}><BackButton ariaLabel="Go back"><span>‹</span></BackButton><strong>Mubo</strong><i /></header>
       <section className={styles.hero}>
         <Cover track={representative} round={kind === "artist"} />
         <div className={styles.heroCopy}><p>{kind}</p><h1>{title}</h1><span>{subtitle}</span>{representative.genres.length > 0 && <small>{representative.genres.slice(0, 3).join(" · ")}</small>}

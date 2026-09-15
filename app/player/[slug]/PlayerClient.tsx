@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import GlassSurface from "../../components/GlassSurface";
-import { usePlayer } from "../../context/PlayerContext";
+import BackButton from "../../components/BackButton";
+import { usePlaybackTime, usePlayer } from "../../context/PlayerContext";
 import type { Track } from "../../data/tracks";
 import styles from "./player.module.css";
 
@@ -30,7 +31,8 @@ function CoverArt({ track, compact = false }: { track: Track; compact?: boolean 
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 
 export default function PlayerClient({ slug }: { slug: string }) {
-  const { tracks, currentTrack, isPlaying, isLoading, currentTime, duration, playTrack, togglePlay, seek, nextTrack, prevTrack, shuffleMode, setShuffleMode, repeatMode, cycleRepeat } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, playTrack, togglePlay, seek, nextTrack, prevTrack, shuffleMode, setShuffleMode, repeatMode, cycleRepeat } = usePlayer();
+  const { currentTime, duration } = usePlaybackTime();
   const routeTrack = tracks.find((item) => item.slug === slug) ?? null;
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function PlayerClient({ slug }: { slug: string }) {
     {track.coverImage ? <Image className={styles.backgroundArt} src={track.coverImage} alt="" fill priority sizes="100vw" /> : <div className={`${styles.backgroundArt} ${styles[track.art]}`} />}
     <div className={styles.backgroundWash} />
     <header className={styles.topbar}>
-      <Link className={styles.iconButton} href="/" aria-label="Back to home"><Icon name="back" /></Link>
+      <BackButton className={styles.iconButton} ariaLabel="Go back"><Icon name="back" /></BackButton>
       <div className={styles.nowLabel}><span>Playing from album</span><strong>{track.album}</strong></div>
       <button className={styles.iconButton} aria-label="More options"><Icon name="more" /></button>
     </header>

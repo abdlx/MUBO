@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { LibraryResponse, Track } from "../data/tracks";
 
 interface PlayerContextType {
@@ -10,8 +10,6 @@ interface PlayerContextType {
   isLoading: boolean;
   libraryError: string | null;
   musicPathConfigured: boolean;
-  currentTime: number;
-  duration: number;
   playTrack: (track: Track) => void;
   togglePlay: () => void;
   nextTrack: () => void;
@@ -29,6 +27,7 @@ interface PlayerContextType {
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
+const TimingContext = createContext<{ currentTime: number; duration: number } | null>(null);
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -50,6 +49,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [shuffleMode, updateShuffleMode] = useState<"off" | "standard" | "smart">("off");
   const [repeatMode, updateRepeatMode] = useState<"off" | "all" | "one">("off");
   const [playerOpen, setPlayerOpen] = useState(false);
+  const openPlayer = useCallback(() => setPlayerOpen(true), []);
+  const closePlayer = useCallback(() => setPlayerOpen(false), []);
 
   const setShuffleMode = useCallback((mode: "off" | "standard" | "smart") => {
     shuffleRef.current = mode;
@@ -184,17 +185,25 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (audio && Number.isFinite(seconds)) audio.currentTime = seconds;
   }, []);
 
-  return <PlayerContext.Provider value={{
+  const playerValue = useMemo<PlayerContextType>(() => ({
     tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured,
-    currentTime, duration, playTrack: selectTrack, togglePlay,
+    playTrack: selectTrack, togglePlay,
     nextTrack, prevTrack, seek,
     queue, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue,
-    playerOpen, openPlayer: () => setPlayerOpen(true), closePlayer: () => setPlayerOpen(false),
-  }}>{children}</PlayerContext.Provider>;
+    playerOpen, openPlayer, closePlayer,
+  }), [tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, selectTrack, togglePlay, nextTrack, prevTrack, seek, queue, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, playerOpen, openPlayer, closePlayer]);
+  const timingValue = useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
+  return <PlayerContext.Provider value={playerValue}><TimingContext.Provider value={timingValue}>{children}</TimingContext.Provider></PlayerContext.Provider>;
 }
 
 export function usePlayer() {
   const context = useContext(PlayerContext);
   if (!context) throw new Error("usePlayer must be used inside PlayerProvider");
+  return context;
+}
+
+export function usePlaybackTime() {
+  const context = useContext(TimingContext);
+  if (!context) throw new Error("usePlaybackTime must be used inside PlayerProvider");
   return context;
 }

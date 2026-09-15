@@ -3,8 +3,8 @@
 .wash { background: linear-gradient(180deg,rgba(5,8,12,.34),#070a0e 48%); inset: 0; position: absolute; z-index: -2; }
 .content { margin: 0 auto; max-width: 920px; padding: max(22px,env(safe-area-inset-top)) clamp(18px,5vw,48px) 90px; }
 .topbar { align-items: center; display: grid; grid-template-columns: 44px 1fr 44px; margin-bottom: clamp(30px,7vh,72px); }
-.topbar a { color: white; display: grid; font-size: 38px; height: 44px; place-items: center; text-decoration: none; width: 44px; }
-.topbar a span { transform: translateY(-2px); }
+.topbar button { background:none; border:0; color: white; cursor:pointer; display: grid; font-size: 38px; height: 44px; place-items: center; width: 44px; }
+.topbar button span { transform: translateY(-2px); }
 .topbar strong { font-size: 14px; letter-spacing: .2em; text-align: center; text-transform: uppercase; }
 .hero { align-items: end; display: grid; gap: clamp(24px,5vw,50px); grid-template-columns: minmax(180px,280px) minmax(0,1fr); }
 .cover,.albumCover { background: linear-gradient(145deg,#213956,#8d5b63); box-shadow: 0 28px 70px rgba(0,0,0,.42); overflow: hidden; position: relative; aspect-ratio: 1; }
