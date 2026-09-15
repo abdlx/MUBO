@@ -20,6 +20,8 @@ On Coolify, deploy `docker-compose.yml` directly without the local override. Coo
 
 The music directory is mounted read-only. Mubo never changes or deletes your files. New and removed songs appear on the next browser refresh after `LIBRARY_SCAN_INTERVAL_MS` (15 seconds by default), without rebuilding the image.
 
+Compose also starts PostgreSQL, Redis, a private recommendation API and two background workers. Listening events personalize Home, Shuffle, Smart Shuffle, Autoplay and Radio from songs in your scanned library. The current app has no accounts, so all visitors share the listener configured by `RECOMMENDATION_USER_ID`. See [the recommendation system](docs/recommendation-system.md) for the architecture, seed data, tests and deployment limits. The standalone Docker CLI and local `npm run dev` paths still play music, but personalized services need Compose or an explicitly configured `RECOMMENDATION_API_URL`.
+
 ## Music folder layout
 
 Mubo recursively scans MP3, M4A, AAC, FLAC, OGG, Opus, WAV, and WebM audio. It reads embedded title, artist, album, track number, duration, and cover-art tags. When tags are missing, it falls back to this folder layout:
@@ -67,3 +69,6 @@ Then open `http://localhost:3000`.
 | `MUSIC_PATH` | `/music` in the image | Music directory visible to the Node.js process |
 | `MUBO_PORT` | `3000` | Host port used by Docker Compose |
 | `LIBRARY_SCAN_INTERVAL_MS` | `15000` | In-memory library scan cache duration |
+| `POSTGRES_PASSWORD` | `mubo-local-only` | Local recommendation database password; change for deployment |
+| `RECOMMENDATION_API_KEY` | `local-development-key` | Private app-to-service key; change for deployment |
+| `RECOMMENDATION_USER_ID` | `local-listener` | Single listener identity until accounts exist |

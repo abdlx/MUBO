@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "./context/PlayerContext";
 import { getSkySlotForDate } from "./components/SkyBackground";
 import { getAlbums, getArtists } from "./data/library";
+import { getRecommendations, resolveRecommended, type HomeModule } from "./lib/recommendations";
+import { emitPlaybackEvent } from "./lib/playback-events";
 
 type IconName = "arrow" | "chevron" | "pause" | "play" | "search" | "sparkle";
 
@@ -24,15 +26,45 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
 }
 
 const categories = ["All", "Songs", "Albums", "Artists"];
-const mixes = [
-  { title: "Discover Weekly", note: "Fresh finds, picked for your ears.", art: "discover" },
-  { title: "Chill Mix", note: "Laid-back color for your day.", art: "chill" },
-  { title: "Late Night", note: "For when the whole world gets quiet.", art: "night" },
-  { title: "Focus Flow", note: "Stay in the zone and let it unfold.", art: "focus" },
-];
+
+function RecommendedSection({ module, tracks, playQueue }: {
+  module: HomeModule; tracks: ReturnType<typeof usePlayer>["tracks"];
+  playQueue: ReturnType<typeof usePlayer>["playQueue"];
+}) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const items = useMemo(() => resolveRecommended(module.items, tracks), [module.items, tracks]);
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries[0]?.isIntersecting) return;
+      module.items.filter((item) => item.recommendationId).forEach((item) => emitPlaybackEvent({
+        event_type: "RECOMMENDATION_IMPRESSION", track_id: item.trackId,
+        surface: "home", recommendation_id: item.recommendationId,
+        model_version: item.modelVersion, context: { module: module.id },
+      }));
+      observer.disconnect();
+    }, { threshold: 0.2 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [module]);
+  if (!items.length) return null;
+  return <section className="home-section" ref={sectionRef} id={`recommendation-${module.id}`}>
+    <div className="section-heading"><h2>{module.title}</h2></div>
+    <div className={`recent-grid recommendation-grid ${module.layout === "compact" ? "recommendation-compact" : ""}`} data-scroll-restore={`home-${module.id}`}>
+      {items.map(({ track, recommendation }) => <button className="album-card" key={track.id}
+        title={recommendation.explanation} onClick={() => playQueue(items.map(({ track: item }) => item), track, "off", module.items)}>
+        <span className={`album-art ${track.art}`}>{track.coverImage && <Image src={track.coverImage} alt="" fill sizes="220px" />}</span>
+        <strong>{track.title}</strong><small>{track.artist}</small>
+      </button>)}
+    </div>
+  </section>;
+}
+
 export default function Home() {
   const router = useRouter();
-  const { tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, playTrack, togglePlay, openPlayer } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, playTrack, playQueue, togglePlay, openPlayer } = usePlayer();
+  const [modules, setModules] = useState<HomeModule[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
   const greeting = getSkySlotForDate().greeting;
@@ -65,6 +97,17 @@ export default function Home() {
   const albums = useMemo(() => getAlbums(tracks), [tracks]);
   const artists = useMemo(() => getArtists(tracks), [tracks]);
   const featured = tracks[0] ?? null;
+
+  useEffect(() => {
+    if (!tracks.length) return;
+    let cancelled = false;
+    void getRecommendations("home", { seed_ids: currentTrack ? [currentTrack.id] : [], seed: new Date().toISOString().slice(0, 13), limit: 18 })
+      .then((result) => {
+        if (cancelled || !Array.isArray(result?.modules)) return;
+        setModules(result.modules as HomeModule[]);
+      });
+    return () => { cancelled = true; };
+  }, [tracks, currentTrack]);
 
   function chooseCategory(category: string) {
     setActiveCategory(category);
@@ -101,6 +144,8 @@ export default function Home() {
             </button>
           </div>
         </section>}
+
+        {modules.map((module) => <RecommendedSection key={module.id} module={module} tracks={tracks} playQueue={playQueue} />)}
 
         <section className="home-section" id="recently-played">
           <div className="section-heading">
@@ -147,10 +192,10 @@ export default function Home() {
           </div>
         </section>}
 
-        {tracks.length > 0 && <section className="home-section" id="made-for-you">
+        {tracks.length > 0 && modules.length === 0 && <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Quick Picks</h2><Link href="/browse/playlists">View all<Icon name="arrow" size={18} /></Link></div>
           <div className="mix-grid" data-scroll-restore="home-picks">
-            {mixes.slice(0, tracks.length).map((mix, index) => <button className={`mix-card ${mix.art}`} key={tracks[index].id} onClick={() => playTrack(tracks[index])}>{tracks[index].coverImage && <Image className="mix-artwork" src={tracks[index].coverImage} alt="" fill sizes="203px" />}<span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{tracks[index].title}</strong><small>{tracks[index].artist} · {tracks[index].album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
+            {tracks.slice(0, 4).map((track, index) => <button className="mix-card" key={track.id} onClick={() => playTrack(track)}>{track.coverImage && <Image className="mix-artwork" src={track.coverImage} alt="" fill sizes="203px" />}<span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>}
 

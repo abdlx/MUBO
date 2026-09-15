@@ -27,7 +27,7 @@ function Cover({ track, round = false }: { track: Track; round?: boolean }) {
 }
 
 export default function CollectionClient({ kind, id }: { kind: CollectionKind; id: string }) {
-  const { tracks, currentTrack, isPlaying, isLoading, playQueue, togglePlay } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, playQueue, togglePlay, startRadio } = usePlayer();
   const collectionTracks = useMemo(() => tracks.filter((track) => kind === "album" ? track.albumId === id : track.artistIds.includes(id)), [tracks, kind, id]);
   const albums = useMemo(() => kind === "artist" ? getAlbums(collectionTracks) : [], [collectionTracks, kind]);
 
@@ -56,6 +56,7 @@ export default function CollectionClient({ kind, id }: { kind: CollectionKind; i
         <Cover track={representative} round={kind === "artist"} />
         <div className={styles.heroCopy}><p>{kind}</p><h1>{title}</h1><span>{subtitle}</span>{representative.genres.length > 0 && <small>{representative.genres.slice(0, 3).join(" · ")}</small>}
           <button className={styles.playAll} onClick={playCollection}><PlayIcon pause={collectionPlaying} />{collectionPlaying ? "Pause" : "Play"}</button>
+          <button className={styles.radio} onClick={() => startRadio(kind, representative, collectionTracks)}>✦ {kind === "artist" ? "Artist" : "Album"} radio</button>
         </div>
       </section>
 

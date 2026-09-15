@@ -9,8 +9,73 @@ services:
     environment:
       MUSIC_PATH: /music
       LIBRARY_SCAN_INTERVAL_MS: ${LIBRARY_SCAN_INTERVAL_MS:-15000}
+      RECOMMENDATION_API_URL: http://recommendation-api:8000
+      RECOMMENDATION_API_KEY: ${RECOMMENDATION_API_KEY:-local-development-key}
+      RECOMMENDATION_USER_ID: ${RECOMMENDATION_USER_ID:-local-listener}
+    depends_on:
+      recommendation-api:
+        condition: service_healthy
     volumes:
       - type: bind
         source: ${MUSIC_PATH:-./music}
         target: /music
         read_only: true
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mubo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mubo-local-only}
+      POSTGRES_DB: mubo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mubo -d mubo"]
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+  recommendation-api:
+    build: ./recommendation
+    restart: unless-stopped
+    environment: &recommendation-env
+      DATABASE_URL: postgresql://mubo:${POSTGRES_PASSWORD:-mubo-local-only}@postgres:5432/mubo
+      REDIS_URL: redis://redis:6379/0
+      RECOMMENDATION_API_KEY: ${RECOMMENDATION_API_KEY:-local-development-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      start_period: 20s
+      retries: 6
+  recommendation-worker:
+    build: ./recommendation
+    command: ["python", "-m", "service.worker"]
+    restart: unless-stopped
+    environment: *recommendation-env
+    depends_on:
+      recommendation-api:
+        condition: service_healthy
+  audio-analysis-worker:
+    build: ./recommendation
+    command: ["python", "-m", "service.analysis"]
+    restart: unless-stopped
+    environment: *recommendation-env
+    depends_on:
+      recommendation-api:
+        condition: service_healthy
+volumes:
+  postgres-data:
+  redis-data:
