@@ -53,7 +53,9 @@
 .progressRow span:last-child { justify-content: flex-end; text-align: right; }
 .progressRow input { --progress: 50%; appearance: none; background: linear-gradient(to right,rgba(255,255,255,.94) var(--progress),rgba(255,255,255,.13) var(--progress)); border: 0; border-radius: var(--control-pill-radius); cursor: pointer; height: 6px; margin: 0; outline: none; width: 100%; }
 .progressRow input::-webkit-slider-thumb { appearance: none; height: 0; width: 0; }
-.mainControls { align-items: center; display: flex; gap: 56px; grid-row: 5; height: 8.6cqw; justify-content: center; margin: 0 auto; transform: translateY(-7px) scale(.9); transform-origin: center; width: max-content; }
+.mainControls { align-items: center; display: flex; gap: clamp(14px,5vw,45px); grid-row: 5; height: 8.6cqw; justify-content: center; margin: 0 auto; transform: translateY(-7px) scale(.9); transform-origin: center; width: max-content; }
+.mode { font-size: 25px; min-width: 29px; }
+.modeActive { color: #ff9ab8; opacity: 1; }
 .skip { flex: 0 0 36px; height: 26px; opacity: .98; width: 36px; }
 .skip svg { height: 100%; width: 100%; }
 .playButton { background: transparent; border: 0; color: white; cursor: pointer; display: grid; filter: drop-shadow(0 4px 8px rgba(31,20,48,.2)); flex: 0 0 29px; height: 36px; padding: 0; place-items: center; transition: transform .2s; width: 29px; }

@@ -54,8 +54,8 @@ button { color: inherit; }
 .home-section { margin-top: 44px; }
 .section-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 20px; }
 .section-heading h2 { font-size: clamp(22px,3.3vw,28px); letter-spacing: -.035em; margin: 0; }
-.section-heading > button { align-items: center; background: transparent; border: 0; color: var(--muted); cursor: pointer; display: flex; gap: 5px; padding: 7px 0 5px 12px; transition: color .2s; }
-.section-heading > button:hover { color: white; }
+.section-heading > button,.section-heading > a { align-items: center; background: transparent; border: 0; color: var(--muted); cursor: pointer; display: flex; gap: 5px; padding: 7px 0 5px 12px; text-decoration:none; transition: color .2s; }
+.section-heading > button:hover,.section-heading > a:hover { color: white; }
 .recent-grid { display: flex; gap: clamp(12px,2.7vw,23px); margin-right: calc(clamp(20px,5vw,42px) * -1); overflow-x: auto; padding-right: clamp(20px,5vw,42px); scrollbar-width: none; }
 .recent-grid::-webkit-scrollbar { display: none; }
 .album-card { background: transparent; border: 0; color: inherit; cursor: pointer; display: block; flex: 0 0 clamp(90px,21.1vw,179px); min-width: 0; padding: 0; text-align: left; text-decoration: none; }

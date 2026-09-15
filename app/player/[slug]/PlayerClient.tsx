@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import GlassSurface from "../../components/GlassSurface";
 import { usePlayer } from "../../context/PlayerContext";
@@ -31,8 +30,7 @@ function CoverArt({ track, compact = false }: { track: Track; compact?: boolean 
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 
 export default function PlayerClient({ slug }: { slug: string }) {
-  const router = useRouter();
-  const { tracks, currentTrack, isPlaying, isLoading, currentTime, duration, playTrack, togglePlay, seek } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, currentTime, duration, playTrack, togglePlay, seek, nextTrack, prevTrack, shuffleMode, setShuffleMode, repeatMode, cycleRepeat } = usePlayer();
   const routeTrack = tracks.find((item) => item.slug === slug) ?? null;
 
   useEffect(() => {
@@ -45,9 +43,7 @@ export default function PlayerClient({ slug }: { slug: string }) {
   const track = currentTrack ?? routeTrack;
   const total = duration || track.duration || 0;
   function changeTrack(direction: number) {
-    const currentIndex = tracks.findIndex((item) => item.slug === track.slug);
-    const next = tracks[(currentIndex + direction + tracks.length) % tracks.length];
-    if (next) { playTrack(next); router.push(`/player/${next.slug}`); }
+    if (direction > 0) nextTrack(); else prevTrack();
   }
 
   return <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
@@ -68,9 +64,11 @@ export default function PlayerClient({ slug }: { slug: string }) {
           <span>{total ? formatTime(total) : "--:--"}</span>
         </div>
         <div className={styles.mainControls}>
+          <button className={`${styles.iconButton} ${styles.mode} ${shuffleMode !== "off" ? styles.modeActive : ""}`} onClick={() => setShuffleMode(shuffleMode === "off" ? "standard" : shuffleMode === "standard" ? "smart" : "off")} aria-label={`Shuffle: ${shuffleMode}. Click to change mode`} title={`Shuffle: ${shuffleMode}`}>⇄{shuffleMode === "smart" ? "✦" : ""}</button>
           <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
           <button className={styles.playButton} onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}><Icon name={isPlaying ? "pause" : "play"} size={32} /></button>
           <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
+          <button className={`${styles.iconButton} ${styles.mode} ${repeatMode !== "off" ? styles.modeActive : ""}`} onClick={cycleRepeat} aria-label={`Repeat: ${repeatMode}. Click to change mode`} title={`Repeat: ${repeatMode}`}>↻{repeatMode === "one" ? "¹" : ""}</button>
         </div>
       </section>
     </GlassSurface>

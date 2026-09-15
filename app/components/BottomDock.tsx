@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import GlassSurface from "./GlassSurface";
 import { usePlayer } from "../context/PlayerContext";
 import styles from "./BottomDock.module.css";
@@ -69,22 +68,19 @@ const items: Array<{ id: DockItem; label: string; target: string }> = [
 
 export default function BottomDock() {
   const router = useRouter();
-  const { currentTrack, isPlaying, togglePlay, nextTrack } = usePlayer();
-  const [active, setActive] = useState<DockItem>("home");
+  const { currentTrack, isPlaying, togglePlay, nextTrack, openPlayer } = usePlayer();
+  const pathname = usePathname();
+  const active = pathname === "/" ? "home" : pathname.includes("genre") || pathname.includes("playlist") ? "radio" : pathname.includes("album") || pathname.includes("artist") ? "library" : "new";
 
   function goTo(item: (typeof items)[number]) {
-    setActive(item.id);
-    document.getElementById(item.target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (item.id === "home") router.push("/");
+    else if (item.id === "new") router.push("/browse/songs");
+    else if (item.id === "radio") router.push("/browse/genres");
+    else router.push("/browse/all");
   }
 
   function openSearch() {
-    const input = document.querySelector<HTMLInputElement>(".search-field input");
-    input?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.setTimeout(() => input?.focus({ preventScroll: true }), 380);
-  }
-
-  function openPlayer() {
-    if (currentTrack) router.push(`/player/${currentTrack.slug}`);
+    router.push("/browse/all");
   }
 
   return (

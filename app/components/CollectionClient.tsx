@@ -26,7 +26,7 @@ function Cover({ track, round = false }: { track: Track; round?: boolean }) {
 }
 
 export default function CollectionClient({ kind, id }: { kind: CollectionKind; id: string }) {
-  const { tracks, currentTrack, isPlaying, isLoading, playTrack, togglePlay } = usePlayer();
+  const { tracks, currentTrack, isPlaying, isLoading, playQueue, togglePlay } = usePlayer();
   const collectionTracks = useMemo(() => tracks.filter((track) => kind === "album" ? track.albumId === id : track.artistIds.includes(id)), [tracks, kind, id]);
   const albums = useMemo(() => kind === "artist" ? getAlbums(collectionTracks) : [], [collectionTracks, kind]);
 
@@ -44,7 +44,7 @@ export default function CollectionClient({ kind, id }: { kind: CollectionKind; i
 
   function playCollection() {
     if (collectionPlaying) togglePlay();
-    else playTrack(firstTrack);
+    else playQueue(collectionTracks, firstTrack);
   }
 
   return <main className={styles.shell}>
@@ -71,7 +71,7 @@ export default function CollectionClient({ kind, id }: { kind: CollectionKind; i
         <div className={styles.trackList}>{collectionTracks.map((track, index) => {
           const active = currentTrack?.id === track.id;
           return <div className={`${styles.trackRow} ${active ? styles.activeTrack : ""}`} key={track.id}>
-            <button className={styles.trackMain} onClick={() => active ? togglePlay() : playTrack(track)} aria-label={`${active && isPlaying ? "Pause" : "Play"} ${track.title}`}>
+            <button className={styles.trackMain} onClick={() => active ? togglePlay() : playQueue(collectionTracks, track)} aria-label={`${active && isPlaying ? "Pause" : "Play"} ${track.title}`}>
               <span className={styles.trackNumber}>{active ? <PlayIcon pause={isPlaying} /> : track.trackNumber ?? index + 1}</span>
               <span className={styles.trackCopy}><strong>{track.title}</strong><small>{track.artist}</small></span>
             </button>
