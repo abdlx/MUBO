@@ -3,13 +3,14 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { usePlayer } from "../context/PlayerContext";
+import { BeatDetector } from "../lib/beat-detector";
 import styles from "./BeatBackdrop.module.css";
 
 const audioAnalysers = new WeakMap<HTMLAudioElement, { context: AudioContext; analyser: AnalyserNode }>();
 
 export default function BeatBackdrop({ coverImage }: { coverImage?: string | null }) {
   const imageRef = useRef<HTMLDivElement>(null);
-  const { getAudioElement, isPlaying } = usePlayer();
+  const { getAudioElement } = usePlayer();
 
   useEffect(() => {
     const image = imageRef.current;
@@ -22,8 +23,8 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
         const context = new AudioContext();
         const source = context.createMediaElementSource(audio);
         const analyser = context.createAnalyser();
-        analyser.fftSize = 1024;
-        analyser.smoothingTimeConstant = 0.75;
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.18;
         source.connect(analyser);
         analyser.connect(context.destination);
         connection = { context, analyser };
@@ -34,29 +35,31 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
     }
 
     const { context, analyser } = connection;
-    if (isPlaying) void context.resume().catch(() => {});
+    if (!audio.paused) void context.resume().catch(() => {});
     const resume = () => void context.resume().catch(() => {});
     audio.addEventListener("play", resume);
+    const detector = new BeatDetector();
+    const reset = () => detector.reset();
+    audio.addEventListener("seeking", reset);
+    audio.addEventListener("loadstart", reset);
+    document.addEventListener("visibilitychange", reset);
     const frequencies = new Uint8Array(analyser.frequencyBinCount);
-    let average = 28;
     let pulse = 0;
     let scale = 1.12;
-    let previousBeat = 0;
+    let previousFrame = 0;
     let frame = 0;
     const animate = (time: number) => {
+      const elapsed = Math.min(64, previousFrame ? time - previousFrame : 16);
+      previousFrame = time;
       if (!audio.paused && context.state === "running") {
         analyser.getByteFrequencyData(frequencies);
-        let bass = 0;
-        for (let index = 1; index <= 5; index++) bass += frequencies[index];
-        bass /= 5;
-        average = average * 0.96 + bass * 0.04;
-        if (bass > Math.max(40, average * 1.22) && time - previousBeat > 220) {
-          pulse = Math.min(1, (bass - average) / 65 + 0.35);
-          previousBeat = time;
-        }
+        const hit = detector.sample(frequencies, context.sampleRate, time);
+        if (hit) pulse = hit;
       }
-      pulse *= 0.91;
-      scale += (1.12 + pulse * 0.075 - scale) * 0.13;
+      const target = 1.12 + pulse * 0.11;
+      const response = target > scale ? 30 : 80;
+      scale += (target - scale) * (1 - Math.exp(-elapsed / response));
+      pulse *= Math.exp(-elapsed / 105);
       image.style.transform = `scale(${scale.toFixed(4)})`;
       frame = requestAnimationFrame(animate);
     };
@@ -64,8 +67,11 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
     return () => {
       cancelAnimationFrame(frame);
       audio.removeEventListener("play", resume);
+      audio.removeEventListener("seeking", reset);
+      audio.removeEventListener("loadstart", reset);
+      document.removeEventListener("visibilitychange", reset);
     };
-  }, [coverImage, getAudioElement, isPlaying]);
+  }, [coverImage, getAudioElement]);
 
   return <div className={styles.backdrop} aria-hidden="true">
     {coverImage && <div className={styles.image} ref={imageRef}><Image src={coverImage} alt="" fill sizes="100vw" /></div>}
