@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { usePlayer } from "../context/PlayerContext";
-import { BeatDetector } from "../lib/beat-detector";
+import { HighNoteEnvelope } from "../lib/high-note-envelope";
 import styles from "./BeatBackdrop.module.css";
 
 const audioAnalysers = new WeakMap<HTMLAudioElement, { context: AudioContext; analyser: AnalyserNode }>();
@@ -38,29 +38,25 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
     if (!audio.paused) void context.resume().catch(() => {});
     const resume = () => void context.resume().catch(() => {});
     audio.addEventListener("play", resume);
-    const detector = new BeatDetector();
-    const reset = () => detector.reset();
+    const envelope = new HighNoteEnvelope();
+    const reset = () => envelope.reset();
     audio.addEventListener("seeking", reset);
     audio.addEventListener("loadstart", reset);
     document.addEventListener("visibilitychange", reset);
     const frequencies = new Uint8Array(analyser.frequencyBinCount);
-    let pulse = 0;
-    let scale = 1.12;
     let previousFrame = 0;
     let frame = 0;
     const animate = (time: number) => {
       const elapsed = Math.min(64, previousFrame ? time - previousFrame : 16);
       previousFrame = time;
+      let noteLevel = 0;
       if (!audio.paused && context.state === "running") {
         analyser.getByteFrequencyData(frequencies);
-        const hit = detector.sample(frequencies, context.sampleRate, time);
-        if (hit) pulse = hit;
+        noteLevel = envelope.sample(frequencies, context.sampleRate, elapsed);
+      } else {
+        noteLevel = envelope.release(elapsed);
       }
-      const target = 1.12 + pulse * 0.11;
-      const response = target > scale ? 30 : 80;
-      scale += (target - scale) * (1 - Math.exp(-elapsed / response));
-      pulse *= Math.exp(-elapsed / 105);
-      image.style.transform = `scale(${scale.toFixed(4)})`;
+      image.style.transform = `scale(${(1.08 + noteLevel * 0.14).toFixed(4)})`;
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);

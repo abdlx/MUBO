@@ -11,4 +11,5 @@
 .buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));justify-items:center;gap:4px}
 .buttons button{display:grid;place-items:center;width:clamp(42px,10vw,50px);height:clamp(42px,10vw,50px);min-width:0;min-height:0;padding:0;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.1);backdrop-filter:blur(12px)}
 .buttons button svg{width:23px;height:23px}.buttons .play{display:grid;place-items:center;width:64px;height:64px}.buttons .play svg{width:29px;height:29px}
+.buttons .play:hover,.buttons .play:focus-visible{color:#17121b;background:#fff}
 .queueHead button{display:flex;align-items:center;gap:5px}.queueHead button svg{width:14px;height:14px}.queue button>svg{width:14px;height:14px;fill:currentColor;color:#ffffffa8}
