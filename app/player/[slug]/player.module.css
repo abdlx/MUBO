@@ -72,3 +72,4 @@
   .artworkWrap { grid-column: 1; grid-row: 2; align-self: center; justify-self: end; width: min(38vw,540px); }
   .glassPlayer { grid-column: 2; grid-row: 2; align-self: center; justify-self: start; width: min(100%,620px) !important; transform: none; }
 }
+.mode{min-width:44px;min-height:44px;position:relative}.mode svg{width:24px;height:24px}.mainControls{gap:clamp(10px,3vw,34px)}

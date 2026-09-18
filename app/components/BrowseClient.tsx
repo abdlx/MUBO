@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
 import { usePlayer } from "../context/PlayerContext";
 import { getAlbums, getArtists } from "../data/library";
@@ -17,11 +17,18 @@ function randomStart(items: Track[]) { return items[Math.floor(Math.random() * i
 export default function BrowseClient({ kind }: { kind: string }) {
   const { tracks, currentTrack, isPlaying, isLoading, playQueue, togglePlay, openPlayer, startRadio } = usePlayer();
   const searchParams = useSearchParams();
-  const query = searchParams.get("q") ?? "";
+  const urlQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(urlQuery);
+  useEffect(() => {
+    const syncQuery = () => setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
+    window.addEventListener("popstate", syncQuery);
+    return () => window.removeEventListener("popstate", syncQuery);
+  }, []);
   const selectedGenre = searchParams.get("genre");
   const selectedPlaylist = searchParams.get("playlist");
   const sort = searchParams.get("sort") ?? "title";
   function updateBrowse(values: Record<string, string | null>, push = true) {
+    if (Object.prototype.hasOwnProperty.call(values, "q")) setQuery(values.q ?? "");
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(values)) { if (value) params.set(key, value); else params.delete(key); }
     const url = `${window.location.pathname}${params.size ? `?${params}` : ""}`;
@@ -48,7 +55,7 @@ export default function BrowseClient({ kind }: { kind: string }) {
   return <main className={styles.shell}>
     <div className={styles.content}>
       <header className={styles.header}><BackButton className={styles.back} ariaLabel="Go back">‹</BackButton><div><p className={styles.eyebrow}>Mubo · Explore</p><h1>{title}</h1><span>{selectedPlaylist || selectedGenre ? `${selected.length} songs` : "Everything in your music library"}</span></div></header>
-      <label className={styles.search}><span aria-hidden="true">⌕</span><input type="search" value={query} onChange={event => updateBrowse({ q: event.target.value }, false)} placeholder="Search songs, artists, albums, and genres" autoFocus={activeKind === "all"} aria-label="Search your library" />{query && <button onClick={() => updateBrowse({ q: null }, false)} aria-label="Clear search">×</button>}</label>
+      <div className={styles.search}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><input type="search" value={query} onChange={event => updateBrowse({ q: event.target.value }, false)} placeholder="Search songs, artists, albums, and genres" autoFocus={activeKind === "all"} aria-label="Search your library" />{query && <button type="button" onClick={() => updateBrowse({ q: null }, false)} aria-label="Clear search">×</button>}</div>
       <nav className={styles.tabs} aria-label="Browse categories" data-scroll-restore="browse-tabs">{kinds.map(item => <Link key={item} className={item === activeKind ? styles.activeTab : ""} href={`/browse/${item}`}>{item[0].toUpperCase() + item.slice(1)}</Link>)}</nav>
       {isLoading && <p className={styles.empty}>Reading your music library…</p>}
       {!isLoading && !tracks.length && <p className={styles.empty}>No music found. Set MUSIC_PATH to your music folder to browse here.</p>}

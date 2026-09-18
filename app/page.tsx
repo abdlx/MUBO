@@ -91,7 +91,7 @@ export default function Home() {
       const fields = activeCategory === "Songs" ? [item.title] : activeCategory === "Albums" ? [item.album, item.albumArtist] : activeCategory === "Artists" ? item.artists : [item.title, ...item.artists, item.album, item.albumArtist];
       return !normalizedQuery || fields.some((field) => field.toLowerCase().includes(normalizedQuery));
     });
-    return result.slice(0, 4);
+    return normalizedQuery ? result : result.slice(0, 4);
   }, [activeCategory, query, tracks]);
 
   const albums = useMemo(() => getAlbums(tracks), [tracks]);
@@ -112,7 +112,7 @@ export default function Home() {
   function chooseCategory(category: string) {
     setActiveCategory(category);
     rememberHome(query, category);
-    router.push(`/browse/${category.toLowerCase()}`);
+    router.push(`/browse/${category.toLowerCase()}${query ? `?q=${encodeURIComponent(query)}` : ""}`);
   }
 
   return (
@@ -120,20 +120,20 @@ export default function Home() {
       <div className="home-content">
         <header className="home-header">
           <div><p className="eyebrow">{greeting}</p><h1>Let&apos;s listen</h1></div>
-          <button className="profile" aria-label="Open profile"><Image src="/afterglow-cover.png" alt="" fill sizes="58px" /><span>A</span></button>
+          <span className="brand-badge" aria-label="Mubo"><Image src="/mubo-mark.svg" alt="" fill sizes="74px" /></span>
         </header>
 
-        <label className="search-field">
+        <div className="search-field">
           <Icon name="search" size={28} />
           <input type="search" value={query} onChange={(event) => { setQuery(event.target.value); rememberHome(event.target.value, activeCategory); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/browse/all?q=${encodeURIComponent(query)}`); }} placeholder="Search for songs, artists, or albums" aria-label="Search for songs, artists, or albums" />
           {query && <button type="button" onClick={() => { setQuery(""); rememberHome("", activeCategory); }} aria-label="Clear search">Clear</button>}
-        </label>
+        </div>
 
         <div className="category-row" aria-label="Browse categories">
           {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => chooseCategory(category)}>{category}</button>)}
         </div>
 
-        {featured && <section className="hero-card" aria-label="Featured track">
+        {!query && featured && <section className="hero-card" aria-label="Featured track">
           <Image className="hero-image" src={featured.coverImage || "/afterglow-cover.png"} alt="" fill priority sizes="(max-width: 760px) 100vw, 1060px" />
           <div className="hero-scrim" />
           <div className="hero-copy">
@@ -145,36 +145,36 @@ export default function Home() {
           </div>
         </section>}
 
-        {modules.map((module) => <RecommendedSection key={module.id} module={module} tracks={tracks} playQueue={playQueue} />)}
+        {!query && modules.map((module) => <RecommendedSection key={module.id} module={module} tracks={tracks} playQueue={playQueue} />)}
 
         <section className="home-section" id="recently-played">
           <div className="section-heading">
-            <h2>Your Music</h2>
-            <Link href="/browse/songs">View all<Icon name="arrow" size={18} /></Link>
+            <h2>{query ? `Search results (${filteredRecent.length})` : "Your Music"}</h2>
+            <Link href={`/browse/songs${query ? `?q=${encodeURIComponent(query)}` : ""}`}>View all<Icon name="arrow" size={18} /></Link>
           </div>
           {filteredRecent.length ? (
             <div className="recent-grid" data-scroll-restore="home-songs">
               {filteredRecent.map((item) => (
-                <Link className="album-card" href={`/player/${item.slug}`} onClick={(event) => { event.preventDefault(); if (currentTrack?.id !== item.id) playTrack(item); openPlayer(); }} key={item.title} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
+                <div className="album-card track-card" key={item.id}>
+                  <button className="track-card-main" type="button" onClick={() => { if (currentTrack?.id !== item.id) playTrack(item); openPlayer(); }} aria-label={`Open ${item.title} by ${item.artist} in the player`}>
                   <span className={`album-art ${item.art}`}>
                     {(item.coverImage || item.art === "road") && <Image src={item.coverImage || "/afterglow-cover.png"} alt={item.title} fill sizes="220px" />}
-                    <span
+                  </span>
+                  <strong>{item.title}</strong><small>{item.artist}</small>
+                  </button>
+                    <button
                       className="hover-play"
                       onClick={(e) => {
-                        e.preventDefault();
                         e.stopPropagation();
                         if (currentTrack?.slug === item.slug) togglePlay();
                         else playTrack(item);
                       }}
-                      role="button"
-                      tabIndex={0}
+                      type="button"
                       aria-label={`Play ${item.title}`}
                     >
                       <Icon name={currentTrack?.slug === item.slug && isPlaying ? "pause" : "play"} size={22} />
-                    </span>
-                  </span>
-                  <strong>{item.title}</strong><small>{item.artist}</small>
-                </Link>
+                    </button>
+                </div>
               ))}
             </div>
           ) : (
@@ -182,7 +182,7 @@ export default function Home() {
           )}
         </section>
 
-        {albums.length > 0 && <section className="home-section" id="albums">
+        {!query && albums.length > 0 && <section className="home-section" id="albums">
           <div className="section-heading"><h2>Your Albums</h2><Link href="/browse/albums">View all<Icon name="arrow" size={18} /></Link></div>
           <div className="recent-grid" data-scroll-restore="home-albums">
             {albums.map((album) => <Link className="album-card" href={`/album/${album.id}`} key={album.id} aria-label={`Open ${album.title} by ${album.artist}`}>
@@ -192,19 +192,19 @@ export default function Home() {
           </div>
         </section>}
 
-        {tracks.length > 0 && modules.length === 0 && <section className="home-section" id="made-for-you">
+        {!query && tracks.length > 0 && modules.length === 0 && <section className="home-section" id="made-for-you">
           <div className="section-heading"><h2>Quick Picks</h2><Link href="/browse/playlists">View all<Icon name="arrow" size={18} /></Link></div>
           <div className="mix-grid" data-scroll-restore="home-picks">
             {tracks.slice(0, 4).map((track, index) => <button className="mix-card" key={track.id} onClick={() => playTrack(track)}>{track.coverImage && <Image className="mix-artwork" src={track.coverImage} alt="" fill sizes="203px" />}<span className="mix-number">0{index + 1}</span><span className="mix-copy"><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><span className="mix-arrow"><Icon name="chevron" size={16} /></span></button>)}
           </div>
         </section>}
 
-        <section className="home-section artists-section" id="your-library">
+        {!query && <section className="home-section artists-section" id="your-library">
           <div className="section-heading"><h2>Your Artists</h2><Link href="/browse/artists">View all<Icon name="arrow" size={18} /></Link></div>
           <div className="artist-row" data-scroll-restore="home-artists">
             {artists.map((artist) => <Link className="artist-card" href={`/artist/${artist.id}`} key={artist.id}><span className={`artist-avatar ${artist.art} ${artist.coverImage ? "has-image" : ""}`}>{artist.coverImage ? <Image src={artist.coverImage} alt="" fill sizes="150px" /> : <i>{artist.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</i>}</span><strong>{artist.name}</strong></Link>)}
           </div>
-        </section>
+        </section>}
       </div>
     </main>
   );

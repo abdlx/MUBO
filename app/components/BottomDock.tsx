@@ -108,17 +108,10 @@ export default function BottomDock() {
           mixBlendMode="difference"
           className={styles.miniPlayerSurface}
         >
-          <div
+          <button
             className={styles.miniTrackInfo}
             onClick={openPlayer}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openPlayer();
-              }
-            }}
+            type="button"
             aria-label={`Open player: ${currentTrack.title} by ${currentTrack.artist}`}
           >
             <div className={styles.miniCover}>
@@ -135,7 +128,7 @@ export default function BottomDock() {
               <span className={styles.miniTitle}>{currentTrack.title}</span>
               <span className={styles.miniArtist}>{currentTrack.artist}</span>
             </div>
-          </div>
+          </button>
 
           <div className={styles.miniControls}>
             <button

@@ -32,6 +32,7 @@ interface PlayerContextType {
   toggleLike: () => void;
   openPlayer: () => void;
   closePlayer: () => void;
+  getAudioElement: () => HTMLAudioElement | null;
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
@@ -71,6 +72,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const likedRef = useRef<string[]>([]);
   const openPlayer = useCallback(() => setPlayerOpen(true), []);
   const closePlayer = useCallback(() => setPlayerOpen(false), []);
+  const getAudioElement = useCallback(() => audioRef.current, []);
   const toggleLike = useCallback(() => {
     const track = currentRef.current;
     if (!track) return;
@@ -389,8 +391,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     playTrack: selectTrack, togglePlay,
     nextTrack, prevTrack, seek, volume, setVolume,
     queue, recommendedTrackIds, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, startRadio,
-    playerOpen, openPlayer, closePlayer, likedTrackIds, toggleLike,
-  }), [tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, selectTrack, togglePlay, nextTrack, prevTrack, seek, volume, setVolume, queue, recommendedTrackIds, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, startRadio, playerOpen, openPlayer, closePlayer, likedTrackIds, toggleLike]);
+    playerOpen, openPlayer, closePlayer, getAudioElement, likedTrackIds, toggleLike,
+  }), [tracks, currentTrack, isPlaying, isLoading, libraryError, musicPathConfigured, selectTrack, togglePlay, nextTrack, prevTrack, seek, volume, setVolume, queue, recommendedTrackIds, shuffleMode, repeatMode, setShuffleMode, cycleRepeat, playQueue, startRadio, playerOpen, openPlayer, closePlayer, getAudioElement, likedTrackIds, toggleLike]);
   const timingValue = useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
   return <PlayerContext.Provider value={playerValue}><TimingContext.Provider value={timingValue}>{children}</TimingContext.Provider></PlayerContext.Provider>;
 }

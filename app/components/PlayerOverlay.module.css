@@ -3,3 +3,12 @@
 @media(prefers-reduced-motion:reduce){.layer{transition:none}}
 .queueHead a,.buttons button:not(.play),.header button,.header a{border-radius:999px}.buttons button:not(.play):hover,.header button:hover,.header a:hover{background:rgba(255,255,255,.08);box-shadow:inset 0 1px rgba(255,255,255,.22)}.queueHead button{background:rgba(255,255,255,.07);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:999px;color:#ffffffb9;cursor:pointer;font-size:11px;padding:8px 10px;white-space:nowrap}
 @media(min-width:1024px){.page{max-width:1180px;min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:0 clamp(45px,6vw,100px);padding:30px 55px 40px}.header{grid-column:1/-1;align-self:start}.art{grid-column:1;grid-row:2;align-self:center;width:min(100%,42vw,520px);margin:0 auto}.controls{grid-column:2;grid-row:2;align-self:center;max-width:510px}.trackHeading h1{font-size:clamp(30px,3vw,44px)}.queue{max-height:190px;overflow:auto}}
+.layer{isolation:isolate}
+.header{grid-template-columns:44px 1fr 44px;gap:12px}
+.header button,.header a,.trackHeading button{width:44px;height:44px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:50%;font-size:initial}
+.header svg,.trackHeading svg{width:22px;height:22px}
+.trackHeading{gap:16px}.trackHeading>div{min-width:0}.trackHeading h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trackHeading button{flex:none}.trackHeading .liked{color:#ff7693}.liked svg{fill:currentColor}
+.buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));justify-items:center;gap:4px}
+.buttons button{display:grid;place-items:center;width:clamp(42px,10vw,50px);height:clamp(42px,10vw,50px);min-width:0;min-height:0;padding:0;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.1);backdrop-filter:blur(12px)}
+.buttons button svg{width:23px;height:23px}.buttons .play{display:grid;place-items:center;width:64px;height:64px}.buttons .play svg{width:29px;height:29px}
+.queueHead button{display:flex;align-items:center;gap:5px}.queueHead button svg{width:14px;height:14px}.queue button>svg{width:14px;height:14px;fill:currentColor;color:#ffffffa8}

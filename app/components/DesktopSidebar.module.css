@@ -2,10 +2,10 @@
 @media(min-width:1024px){
   .sidebar{display:flex;flex-direction:column;position:fixed;inset:0 auto 86px 0;width:232px;padding:28px 15px 24px;background:#090909;border-right:1px solid rgba(255,255,255,.12);z-index:40}
   .brand{display:flex;align-items:center;gap:10px;color:white;text-decoration:none;padding:0 13px 34px;font-size:22px;letter-spacing:-.06em}
-  .brandMark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:white;color:#080808;font-size:26px;font-weight:800;line-height:1}
+  .brand img{display:block;flex:none;border-radius:10px}
   .mainNav,.libraryNav{display:grid;gap:3px}.mainNav a,.libraryNav a{display:flex;align-items:center;gap:12px;min-height:43px;padding:0 13px;border-radius:10px;color:rgba(255,255,255,.66);font-size:14px;font-weight:600;text-decoration:none;transition:background .18s,color .18s}
   .mainNav a:hover,.libraryNav a:hover,.mainNav .active,.libraryNav .active{background:rgba(255,255,255,.1);color:#fff}
-  .icon{display:grid;place-items:center;width:23px;font-size:25px;line-height:1;font-weight:400}.divider{height:1px;background:rgba(255,255,255,.12);margin:24px 13px}
+  .icon{display:grid;place-items:center;width:23px;height:23px}.icon svg{width:21px;height:21px}.divider{height:1px;background:rgba(255,255,255,.12);margin:24px 13px}
   .caption{color:rgba(255,255,255,.43);font-size:10px;font-weight:750;letter-spacing:.16em;margin:0 13px 12px}.libraryNav a{min-height:37px;font-size:13px;font-weight:550}
   .footer{display:grid;gap:5px;margin-top:auto;padding:15px 13px 0;border-top:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.58);font-size:12px}.footer small{color:rgba(255,255,255,.36)}
 }

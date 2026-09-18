@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import GlassSurface from "../../components/GlassSurface";
 import BackButton from "../../components/BackButton";
+import BeatBackdrop from "../../components/BeatBackdrop";
 import { usePlaybackTime, usePlayer } from "../../context/PlayerContext";
 import type { Track } from "../../data/tracks";
 import styles from "./player.module.css";
@@ -12,7 +13,9 @@ import styles from "./player.module.css";
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     back: <path d="m15 18-6-6 6-6" />,
-    more: <><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" /></>,
+    more: <><path d="M7 17 17 7M8 7h9v9" /></>,
+    shuffle: <><path d="M3 7h3c5 0 7 10 12 10h3M18 14l3 3-3 3M3 17h3c2 0 3-1 4-2M15 9c1-1 2-2 3-2h3M18 4l3 3-3 3" /></>,
+    repeat: <><path d="M17 3.5 20 7l-3 3.5M20 7H7a4 4 0 0 0-4 4M7 20.5 4 17l3-3.5M4 17h13a4 4 0 0 0 4-4" /></>,
     previous: <><path d="M10 3.8Q11.8 2.8 11.8 5v14q0 2.2-1.8 1.2l-8.6-6.8Q.2 12 1.4 10.6Z" fill="currentColor" stroke="none" /><path d="M22 3.8Q23.8 2.8 23.8 5v14q0 2.2-1.8 1.2l-8.6-6.8q-1.2-1.4 0-2.8Z" fill="currentColor" stroke="none" /></>,
     next: <><path d="M2 3.8Q.2 2.8.2 5v14q0 2.2 1.8 1.2l8.6-6.8q1.2-1.4 0-2.8Z" fill="currentColor" stroke="none" /><path d="M14 3.8q-1.8-1-1.8 1.2v14q0 2.2 1.8 1.2l8.6-6.8q1.2-1.4 0-2.8Z" fill="currentColor" stroke="none" /></>,
     play: <path d="m8 5 11 7-11 7V5Z" fill="currentColor" stroke="none" />,
@@ -49,11 +52,11 @@ export default function PlayerClient({ slug }: { slug: string }) {
   }
 
   return <main className={`${styles.playerShell} ${styles[`${track.art}Shell`]}`}>
-    <div className={styles.backgroundWash} />
+    <BeatBackdrop coverImage={track.coverImage} />
     <header className={styles.topbar}>
       <BackButton className={styles.iconButton} ariaLabel="Go back"><Icon name="back" /></BackButton>
       <div className={styles.nowLabel}><span>Playing from album</span><strong>{track.album}</strong></div>
-      <button className={styles.iconButton} aria-label="More options"><Icon name="more" /></button>
+      <Link className={styles.iconButton} href={`/album/${track.albumId}`} aria-label="Open album"><Icon name="more" /></Link>
     </header>
     <section className={styles.artworkWrap} aria-label={`${track.title} album artwork`}><div className={styles.artworkGlow} /><CoverArt track={track} /><div className={styles.artworkShine} /></section>
     <GlassSurface width="min(100%, 680px)" height="auto" borderRadius="var(--control-card-radius)" borderWidth={0.07} brightness={100} opacity={0.08} blur={11} displace={0} backgroundOpacity={0.08} saturation={1} distortionScale={-180} redOffset={0} greenOffset={10} blueOffset={20} xChannel="R" yChannel="G" mixBlendMode="difference" className={styles.glassPlayer} style={{ aspectRatio: "1.9" }}>
@@ -65,11 +68,11 @@ export default function PlayerClient({ slug }: { slug: string }) {
           <span>{total ? formatTime(total) : "--:--"}</span>
         </div>
         <div className={styles.mainControls}>
-          <button className={`${styles.iconButton} ${styles.mode} ${shuffleMode !== "off" ? styles.modeActive : ""}`} onClick={() => setShuffleMode(shuffleMode === "off" ? "standard" : shuffleMode === "standard" ? "smart" : "off")} aria-label={`Shuffle: ${shuffleMode}. Click to change mode`} title={`Shuffle: ${shuffleMode}`}>⇄{shuffleMode === "smart" ? "✦" : ""}</button>
+          <button className={`${styles.iconButton} ${styles.mode} ${shuffleMode !== "off" ? styles.modeActive : ""}`} onClick={() => setShuffleMode(shuffleMode === "off" ? "standard" : shuffleMode === "standard" ? "smart" : "off")} aria-label={`Shuffle: ${shuffleMode}. Click to change mode`} title={`Shuffle: ${shuffleMode}`}><Icon name="shuffle" />{shuffleMode === "smart" ? "✦" : ""}</button>
           <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(-1)} aria-label="Previous track"><Icon name="previous" size={32} /></button>
           <button className={styles.playButton} onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}><Icon name={isPlaying ? "pause" : "play"} size={32} /></button>
           <button className={`${styles.iconButton} ${styles.skip}`} onClick={() => changeTrack(1)} aria-label="Next track"><Icon name="next" size={32} /></button>
-          <button className={`${styles.iconButton} ${styles.mode} ${repeatMode !== "off" ? styles.modeActive : ""}`} onClick={cycleRepeat} aria-label={`Repeat: ${repeatMode}. Click to change mode`} title={`Repeat: ${repeatMode}`}>↻{repeatMode === "one" ? "¹" : ""}</button>
+          <button className={`${styles.iconButton} ${styles.mode} ${repeatMode !== "off" ? styles.modeActive : ""}`} onClick={cycleRepeat} aria-label={`Repeat: ${repeatMode}. Click to change mode`} title={`Repeat: ${repeatMode}`}><Icon name="repeat" />{repeatMode === "one" ? "1" : ""}</button>
         </div>
       </section>
     </GlassSurface>
