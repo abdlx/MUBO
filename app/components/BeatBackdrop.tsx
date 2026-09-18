@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { usePlayer } from "../context/PlayerContext";
-import { HighNoteEnvelope } from "../lib/high-note-envelope";
+import { AdaptiveMotion } from "../lib/adaptive-motion";
 import styles from "./BeatBackdrop.module.css";
 
 const audioAnalysers = new WeakMap<HTMLAudioElement, { context: AudioContext; analyser: AnalyserNode }>();
@@ -38,8 +38,8 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
     if (!audio.paused) void context.resume().catch(() => {});
     const resume = () => void context.resume().catch(() => {});
     audio.addEventListener("play", resume);
-    const envelope = new HighNoteEnvelope();
-    const reset = () => envelope.reset();
+    const motion = new AdaptiveMotion();
+    const reset = () => motion.reset();
     audio.addEventListener("seeking", reset);
     audio.addEventListener("loadstart", reset);
     document.addEventListener("visibilitychange", reset);
@@ -49,14 +49,14 @@ export default function BeatBackdrop({ coverImage }: { coverImage?: string | nul
     const animate = (time: number) => {
       const elapsed = Math.min(64, previousFrame ? time - previousFrame : 16);
       previousFrame = time;
-      let noteLevel = 0;
+      let motionLevel = 0;
       if (!audio.paused && context.state === "running") {
         analyser.getByteFrequencyData(frequencies);
-        noteLevel = envelope.sample(frequencies, context.sampleRate, elapsed);
+        motionLevel = motion.sample(frequencies, context.sampleRate, time, elapsed);
       } else {
-        noteLevel = envelope.release(elapsed);
+        motionLevel = motion.release(elapsed);
       }
-      image.style.transform = `scale(${(1.08 + noteLevel * 0.14).toFixed(4)})`;
+      image.style.transform = `scale(${(1.08 + motionLevel * 0.14).toFixed(4)})`;
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
